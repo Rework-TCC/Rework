@@ -781,14 +781,68 @@ function occurrenceRows(list) {
 }
 
 // Aplica filtros e permite editar cada ocorrência.
-function initOccurrences() {
+function occurrenceFromApi(row) {
+  return {
+    id: row.protocolo,
+    date: row.data_abertura
+      ? new Date(row.data_abertura).toLocaleDateString("pt-BR")
+      : "",
+    line: row.linha || "",
+    model: row.modelo || "",
+    part: row.parte_processo || "",
+    defect: row.defeito || "",
+    description: row.descricao_problema || "",
+    serialStart: row.serial_inicial || "",
+    serialEnd: row.serial_final || "",
+    blocked: Number(row.quantidade_bloqueada || 0),
+    detected: Number(row.quantidade_detectada || 0),
+    area: row.area_solicitante || "",
+    status: row.status || "Pendente",
+    containerHourlyCost: Number(row.custo_container_hora || 0),
+    salesDelayHourlyCost: Number(row.custo_atraso_venda_hora || 0),
+    createdAt: row.data_abertura,
+    resolvedAt: row.resolvido_em,
+
+    // Ainda serão ligados ao banco nas próximas etapas
+    classification: row.metodo?.classificacao || "",
+    department: row.metodo?.departamento || "",
+    person: row.metodo?.responsavel || "",
+    cause: row.metodo?.causa || "",
+    method: row.metodo?.metodo || "",
+    containers: (row.containers || []).map(container => ({ ...container, qty: Number(container.qty) })),
+    scans: (row.scans || []).map(scan => ({ ...scan, at: scan.at ? new Date(scan.at).toLocaleString("pt-BR") : "" }))
+  };
+}
+
+async function apiRequest(url, options) {
+  const response = await fetch(url, options);
+  const resultado = await response.json();
+  if (!response.ok) {
+    const error = new Error(resultado.mensagem || "Erro ao acessar o banco de dados");
+    error.status = response.status;
+    throw error;
+  }
+  return resultado;
+}
+
+async function loadCurrentOccurrence(host) {
+  try {
+    return await getCurrent();
+  } catch (error) {
+    if (error.status === 404) showMissingOccurrence();
+    else feedback(`Não foi possível carregar a ocorrência: ${error.message}`, true, host);
+    return null;
+  }
+}
+
+async function initOccurrences() {
   const body = document.querySelector("#occurrenceRows");
   if (!body) return;
   if ((sessionStorage.getItem("rework-profile") || "Produção") === "Produção") {
     location.replace("dashboard.html");
     return;
   }
-  let data = read();
+  let data = [];
   const search = document.querySelector("#search");
   const date = document.querySelector("#dateFilter");
   const status = document.querySelector("#statusFilter");
@@ -823,6 +877,8 @@ function initOccurrences() {
     form.querySelectorAll("input, select, textarea").forEach((field) => {
       field.disabled = profile === "Expedição" && !field.closest(".cost-field");
     });
+    form.elements.date.disabled = true;
+    form.elements.person.disabled = true;
     markClean(form);
     dialog.showModal();
   };
@@ -855,12 +911,20 @@ function initOccurrences() {
         (button) => (button.onclick = () => openEditor(button.dataset.edit)),
       );
     body.querySelectorAll("[data-delete-occurrence]").forEach((button) => {
-      button.onclick = () => {
-        if (!deleteOccurrence(button.dataset.deleteOccurrence)) return;
-        data = read();
-        render();
-        feedback(`Ocorrência ${button.dataset.deleteOccurrence} excluída.`);
-        search.focus();
+      button.onclick = async () => {
+        const protocolo = button.dataset.deleteOccurrence;
+        if (!window.confirm(`Excluir definitivamente a ocorrência ${protocolo}?`)) return;
+        button.disabled = true;
+        try {
+          await apiRequest(`/api/occurrences/${encodeURIComponent(protocolo)}`, { method: "DELETE" });
+          data = data.filter(item => item.id !== protocolo);
+          render();
+          feedback(`Ocorrência ${protocolo} excluída.`);
+          search.focus();
+        } catch (error) {
+          feedback(`Erro ao excluir: ${error.message}`, true);
+          button.disabled = false;
+        }
       };
     });
     body
@@ -880,11 +944,10 @@ function initOccurrences() {
     .querySelectorAll("[data-close-dialog]")
     .forEach((button) => (button.onclick = () => closeEditor(dialog, form)));
   dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeEditor(dialog, form); });
-  form.onsubmit = (event) => {
+  form.onsubmit = async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
     const original = data.find((item) => item.id === editingId);
-    const occurrence = JSON.parse(JSON.stringify(original));
     const values = new FormData(form);
     const serialStart = values.get("serialStart")?.trim();
     const serialEnd = values.get("serialEnd")?.trim();
@@ -904,41 +967,74 @@ function initOccurrences() {
       if (values.get("status") !== original.status) changes.push(`Status: ${original.status} → ${values.get("status")}`);
       if (Number(values.get("blocked")) !== original.blocked) changes.push(`Quantidade bloqueada: ${original.blocked} → ${values.get("blocked")}. Containers e bipagens existentes não serão alterados.`);
       if (serialStart !== original.serialStart || serialEnd !== original.serialEnd) changes.push(`Nova faixa: ${serialStart} a ${serialEnd}. As bipagens existentes serão mantidas.`);
-      if (values.get("date") !== toIsoDate(original.date)) changes.push("A data do bloqueio será alterada e afetará o cálculo do custo acumulado.");
       if (changes.length && !window.confirm(`Confirme as alterações em ${editingId}:\n\n${changes.join("\n")}\n\nSalvar alterações?`)) return;
     }
     editStatus.textContent = "";
-    if (profile === "Qualidade") {
-      const previousStatus = occurrence.status;
-      ["model", "line", "defect", "description", "person", "status"].forEach(
-        (key) => (occurrence[key] = values.get(key).trim()),
-      );
-      occurrence.date = fromIsoDate(values.get("date"));
-      occurrence.createdAt = `${values.get("date")}T00:00:00`;
-      occurrence.blocked = Number(values.get("blocked"));
-      occurrence.serialStart = serialStart;
-      occurrence.serialEnd = serialEnd;
-      if (occurrence.status === "Finalizado" && previousStatus !== "Finalizado")
-        occurrence.resolvedAt = new Date().toISOString();
-      if (occurrence.status !== "Finalizado") occurrence.resolvedAt = null;
+    const submit = form.querySelector('[type="submit"]');
+    if (submit.disabled) return;
+    submit.disabled = true;
+    const savedSignature = formSignature(form);
+    const quality = profile === "Qualidade";
+    try {
+      await apiRequest(`/api/occurrences/${encodeURIComponent(editingId)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          linha: quality ? values.get("line") : original.line,
+          modelo: quality ? values.get("model") : original.model,
+          defeito: quality ? values.get("defect") : original.defect,
+          descricao_problema: quality ? values.get("description") : original.description,
+          serial_inicial: quality ? serialStart : original.serialStart,
+          serial_final: quality ? serialEnd : original.serialEnd,
+          quantidade_bloqueada: quality ? Number(values.get("blocked")) : original.blocked,
+          status: quality ? values.get("status") : original.status,
+          custo_container_hora: Number(values.get("containerHourlyCost") || 0),
+          custo_atraso_venda_hora: Number(values.get("salesDelayHourlyCost") || 0)
+        })
+      });
+      formSnapshots.set(form, savedSignature);
+      dialog.close();
+      feedback(`Ocorrência ${editingId} atualizada com sucesso.`);
+      try {
+        data = (await apiRequest("/api/occurrences")).map(occurrenceFromApi);
+        render();
+      } catch (error) {
+        feedback(`Ocorrência salva, mas não foi possível atualizar a lista: ${error.message}`, true);
+      }
+    } catch (error) {
+      feedback(`Erro ao atualizar: ${error.message}`, true, editStatus);
+    } finally {
+      submit.disabled = false;
     }
-    occurrence.containerHourlyCost = Number(
-      values.get("containerHourlyCost") || 0,
-    );
-    occurrence.salesDelayHourlyCost = Number(
-      values.get("salesDelayHourlyCost") || 0,
-    );
-    const updated = data.map((item) => item.id === editingId ? occurrence : item);
-    if (!save(updated, editStatus)) return;
-    data = updated;
-    markClean(form);
-    dialog.close();
-    render();
-    feedback(`Ocorrência ${editingId} atualizada. As alterações já estão disponíveis na lista.`);
-    const trigger = [...body.querySelectorAll("[data-edit]")].find((button) => button.dataset.edit === editingId);
-    (trigger || search).focus();
   };
-  render();
+  try {
+    body.innerHTML = `
+      <tr>
+        <td colspan="9" class="empty">
+          Carregando ocorrências...
+        </td>
+      </tr>
+    `;
+
+    const response = await fetch("/api/occurrences");
+
+    if (!response.ok) {
+      throw new Error("Não foi possível carregar as ocorrências");
+    }
+
+    const rows = await response.json();
+    data = rows.map(occurrenceFromApi);
+    render();
+  } catch (error) {
+    console.error("Erro ao carregar ocorrências:", error);
+    body.innerHTML = `
+      <tr>
+        <td colspan="9" class="empty">
+          Não foi possível carregar as ocorrências do banco.
+        </td>
+      </tr>
+    `;
+  }
 }
 
 // Calcula indicadores e o progresso exibidos no Dashboard.
@@ -986,10 +1082,17 @@ function renderDashboardCharts(data, open) {
   document.querySelector("#dashboardChartsUpdated").textContent = `${uiText("Atualizado em", "Updated on")} ${new Date().toLocaleDateString("pt-BR")}`;
 }
 
-function initDashboard() {
+async function initDashboard() {
   const metrics = document.querySelector("#dashboardMetrics");
   if (!metrics) return;
-  const data = read();
+  let data = [];
+  try {
+    data = (await apiRequest("/api/occurrences")).map(occurrenceFromApi);
+  } catch (error) {
+    console.error("Erro ao carregar dashboard:", error);
+    feedback(`Não foi possível carregar o dashboard: ${error.message}`, true);
+    return;
+  }
   const open = data.filter((item) =>
     ["Iniciado", "Pendente"].includes(item.status),
   );
@@ -1021,8 +1124,8 @@ function initDashboard() {
     `Atualizado em ${new Date().toLocaleDateString("pt-BR")}`;
 }
 
-function getCurrent() {
-  return read().find((item) => item.id === selected());
+async function getCurrent() {
+  return occurrenceFromApi(await apiRequest(`/api/occurrences/${encodeURIComponent(selected())}`));
 }
 
 function showMissingOccurrence() {
@@ -1039,14 +1142,11 @@ function setLinks(occurrence) {
 }
 
 // Salva o método de retrabalho e seu arquivo anexo.
-function initMethod() {
+async function initMethod() {
   const form = document.querySelector("#methodForm");
   if (!form) return;
-  const occurrence = getCurrent();
-  if (!occurrence) {
-    showMissingOccurrence();
-    return;
-  }
+  const occurrence = await loadCurrentOccurrence(host);
+  if (!occurrence) return;
   choose(occurrence.id);
   setLinks(occurrence);
   document.querySelector("#methodId").textContent = occurrence.id;
@@ -1136,14 +1236,11 @@ function fileToDataUrl(file) {
 }
 
 // Registra os seriais inspecionados como OK ou NG.
-function initScans() {
+async function initScans() {
   const form = document.querySelector("#scanForm");
   if (!form) return;
-  const occurrence = getCurrent();
-  if (!occurrence) {
-    showMissingOccurrence();
-    return;
-  }
+  const occurrence = await loadCurrentOccurrence(host);
+  if (!occurrence) return;
   choose(occurrence.id);
   setLinks(occurrence);
   const input = document.querySelector("#serialScan");
@@ -1242,14 +1339,11 @@ function initScans() {
 }
 
 // Exibe os containers vinculados ao bloqueio selecionado.
-function initContainers() {
+async function initContainers() {
   const host = document.querySelector("#containerContent");
   if (!host) return;
-  const occurrence = getCurrent();
-  if (!occurrence) {
-    showMissingOccurrence();
-    return;
-  }
+  const occurrence = await loadCurrentOccurrence(host);
+  if (!occurrence) return;
   choose(occurrence.id);
   setLinks(occurrence);
   document.querySelector("#containerId").textContent = occurrence.id;
@@ -1257,14 +1351,11 @@ function initContainers() {
 }
 
 // Exibe o resumo e a próxima ação da ocorrência.
-function initDetail() {
+async function initDetail() {
   const host = document.querySelector("#detailContent");
   if (!host) return;
-  const occurrence = getCurrent();
-  if (!occurrence) {
-    showMissingOccurrence();
-    return;
-  }
+  const occurrence = await loadCurrentOccurrence(host);
+  if (!occurrence) return;
   choose(occurrence.id);
   setLinks(occurrence);
   document.querySelector("#pageId").textContent = occurrence.id;
@@ -1514,7 +1605,7 @@ function initNew() {
   document.querySelector("#backStep").onclick = () => {
     showStep(false);
   };
-  form.onsubmit = (event) => {
+  form.onsubmit = async (event) => {
     event.preventDefault();
     if (!validateFirstStep()) return;
     if (step2.hidden) { showStep(true); return; }
@@ -1583,11 +1674,58 @@ function initNew() {
       (rows.querySelector('[name="containerQty"]') || document.querySelector("#addContainer")).focus();
       return;
     }
-    data.unshift(occurrence);
-    if (!save(data, newStatus)) return;
-    choose(id);
-    markClean(form);
-    navigateWithFeedback(`detalhes-ocorrencia.html${params(id)}`, `Ocorrência ${id} criada. ${occurrence.method ? "Método informado: a bipagem já está disponível." : "Próximo passo: definir o método de retrabalho para liberar a bipagem."}`);
+    try {
+      const response = await fetch("/api/occurrences", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          linha: values.get("line"),
+          modelo: values.get("model"),
+
+          parte_processo: values.get("part"),
+          defeito: values.get("defect"),
+          descricao_problema: values.get("description"),
+
+          serial_inicial: serialStart,
+          serial_final: serialEnd,
+
+          quantidade_bloqueada: blocked,
+          quantidade_detectada: detected,
+
+          area_solicitante: values.get("area"),
+
+          status: "Pendente",
+
+          custo_container_hora:
+            Number(values.get("containerHourlyCost") || 0),
+
+          custo_atraso_venda_hora:
+            Number(values.get("salesDelayHourlyCost") || 0),
+
+          containers: containers
+        }),
+      });
+      const resultado = await response.json();
+      if (!response.ok) {
+        throw new Error(resultado.mensagem || "Erro ao criar ocorrência");
+      }
+      markClean(form);
+      feedback(
+        `Ocorrência ${resultado.protocolo} criada com sucesso no banco de dados.`,
+        false,
+        newStatus
+      );
+      console.log(resultado);
+    } catch (error) {
+      console.error(error);
+      feedback(
+        `Não foi possível criar a ocorrência: ${error.message}`,
+        true,
+        newStatus
+      );
+    }
   };
 }
 
