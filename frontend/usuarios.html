@@ -15,8 +15,14 @@
         <div>
           <p class="kicker">Acesso e responsabilidade</p>
           <h1>Usuários e perfis</h1>
-          <p>Explore os perfis de acesso e simule o cadastro de pessoas.</p>
-          <p class="notice">Os usuários adicionados aparecem somente nesta página até recarregá-la. O cadastro demonstrativo não cria credenciais nem altera as permissões dos perfis.</p>
+          <p>
+            Gerencie os usuários autorizados a acessar o Rework e seus respectivos
+            perfis de acesso.
+          </p>
+          <p class="notice">
+            Novos usuários receberão uma senha temporária gerada pelo sistema.
+            Essa senha deverá ser alterada obrigatoriamente no primeiro acesso.
+          </p>
         </div>
         <button id="addUser" class="primary" type="button">
           Adicionar usuário
@@ -106,8 +112,8 @@
         <form id="userForm">
           <header class="dialog-header">
             <div>
-              <p class="kicker">Novo acesso</p>
-              <h2 id="userDialogTitle">Adicionar usuário</h2>
+              <p class="kicker">Gestão de acessos</p>
+              <h2 id="userDialogTitle">Cadastrar novo usuário</h2>
             </div>
             <button
               class="icon-button"
@@ -118,25 +124,41 @@
               &times;
             </button>
           </header>
-          <p class="muted">Campos com * são obrigatórios.</p>
+          <p class="muted">
+            Informe os dados do funcionário e defina o perfil de acesso.
+            Campos com * são obrigatórios.
+          </p>
           <div class="form-grid">
             <div class="field full">
-              <label for="userName">Nome <span aria-hidden="true">*</span></label
-              ><input id="userName" name="name" required />
+              <label for="userName">Nome completo <span aria-hidden="true">*</span></label>
+              <input id="userName" name="name" type="text" autocomplete="name" placeholder="Ex.: Maria da Silva" required />
+            </div>
+            <div class="field full">
+              <label for="userEmail">E-mail corporativo <span aria-hidden="true">*</span></label>
+              <input id="userEmail" name="email" type="email" autocomplete="email" placeholder="Ex.: maria.silva@empresa.com" required />
             </div>
             <div class="field">
-              <label for="userArea">Área <span aria-hidden="true">*</span></label
-              ><input id="userArea" name="area" required />
+              <label for="userArea">Área <span aria-hidden="true">*</span></label>
+              <input id="userArea" name="area" type="text" placeholder="Ex.: Qualidade" required />
             </div>
             <div class="field">
-              <label for="userProfile">Perfil</label
-              ><select id="userProfile" name="profile">
-                <option>Qualidade</option>
-                <option>Engenharia</option>
-                <option>Produção</option>
-                <option>Expedição</option>
+              <label for="userProfile">Perfil de acesso <span aria-hidden="true">*</span></label>
+              <select id="userProfile" name="profile" required>
+                <option value="">Selecione um perfil</option>
+                <option value="Qualidade">Qualidade</option>
+                <option value="Engenharia">Engenharia</option>
+                <option value="Produção">Produção</option>
+                <option value="Expedição">Expedição</option>
               </select>
             </div>
+          </div>
+          <div class="notice">
+            <strong>Primeiro acesso</strong>
+            <p>
+              O sistema gerará uma senha temporária após a criação do usuário.
+              Essa senha será exibida apenas uma vez e deverá ser alterada pelo
+              funcionário no primeiro acesso ao Rework.
+            </p>
           </div>
           <div class="actions">
             <button class="secondary" type="button" data-close-user>
@@ -144,6 +166,40 @@
             ><button class="primary" type="submit">Criar usuário</button>
           </div>
         </form>
+      </dialog>
+      <dialog id="temporaryPasswordDialog" class="edit-dialog" aria-labelledby="temporaryPasswordTitle">
+        <div class="dialog-header">
+          <div>
+            <p class="kicker">Usuário criado</p>
+            <h2 id="temporaryPasswordTitle">Credenciais de primeiro acesso</h2>
+          </div>
+          <button id="closeTemporaryPassword" class="icon-button" type="button" aria-label="Fechar">&times;</button>
+        </div>
+        <div class="temporary-access">
+          <p>O usuário foi criado com sucesso.</p>
+          <p class="notice">
+            A senha abaixo será exibida somente neste momento.
+            Oriente o funcionário a alterá-la no primeiro acesso.
+          </p>
+          <div class="field">
+            <label>Usuário</label>
+            <strong id="createdUserName">-</strong>
+          </div>
+          <div class="field">
+            <label>E-mail</label>
+            <strong id="createdUserEmail">-</strong>
+          </div>
+          <div class="field">
+            <label>Senha temporária</label>
+            <div class="temporary-password-box">
+              <code id="temporaryPassword">-</code>
+              <button id="copyTemporaryPassword" class="secondary" type="button">Copiar senha</button>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="finishUserCreation" class="primary" type="button">Concluir</button>
+          </div>
+        </div>
       </dialog>
     </main>
     <script src="app.js"></script>

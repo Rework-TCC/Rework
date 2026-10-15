@@ -4,11 +4,18 @@ let storageReadFailed = false;
 
 // Feedback persistente na tela e proteção dos formulários ainda não salvos.
 const formSnapshots = new WeakMap();
+function handleBeforeUnload(event) {
+  if (!pendingForms().length) return;
+
+  event.preventDefault();
+  event.returnValue = "";
+}
 const formSignature = (form) => JSON.stringify([...new FormData(form)].map(([key, value]) =>
   [key, value instanceof File ? (value.name ? [value.name, value.size, value.lastModified] : null) : value]));
 const markClean = (form) => formSnapshots.set(form, formSignature(form));
 const isDirty = (form) => formSnapshots.has(form) && formSignature(form) !== formSnapshots.get(form);
-const pendingForms = () => [...document.querySelectorAll("form[data-protect]")].filter(isDirty);
+const pendingForms = () =>
+  [...document.querySelectorAll("form[data-protect]")].filter(isDirty);
 const uiText = (pt, en) => preferenceLanguage() === "en" ? en : pt;
 
 function feedback(message, error = false, target) {
@@ -91,11 +98,7 @@ function initFormGuidance() {
     if (!confirmDiscard()) { event.preventDefault(); event.stopPropagation(); }
     else pendingForms().forEach(markClean);
   }, true);
-  window.addEventListener("beforeunload", (event) => {
-    if (!pendingForms().length) return;
-    event.preventDefault();
-    event.returnValue = "";
-  });
+  window.addEventListener("beforeunload", handleBeforeUnload);
   document.querySelectorAll(".table-wrap").forEach((wrap) => {
     const table = wrap.querySelector("table");
     if (table) {
@@ -809,6 +812,13 @@ function occurrenceFromApi(row) {
     person: row.metodo?.responsavel || "",
     cause: row.metodo?.causa || "",
     method: row.metodo?.metodo || "",
+    methodFile: row.metodo?.arquivo_caminho
+      ? {
+          name: row.metodo.arquivo_nome,
+          type: row.metodo.arquivo_tipo,
+          data: row.metodo.arquivo_caminho
+        }
+      : null,
     containers: (row.containers || []).map(container => ({ ...container, qty: Number(container.qty) })),
     scans: (row.scans || []).map(scan => ({ ...scan, at: scan.at ? new Date(scan.at).toLocaleString("pt-BR") : "" }))
   };
@@ -1145,7 +1155,8 @@ function setLinks(occurrence) {
 async function initMethod() {
   const form = document.querySelector("#methodForm");
   if (!form) return;
-  const occurrence = await loadCurrentOccurrence(host);
+  const status = document.querySelector("#methodFileStatus");
+  const occurrence = await loadCurrentOccurrence(status);
   if (!occurrence) return;
   choose(occurrence.id);
   setLinks(occurrence);
@@ -1154,7 +1165,6 @@ async function initMethod() {
     `<strong>${esc(occurrence.defect)}</strong><br>${esc(occurrence.model)} · ${esc(occurrence.line)}<br>${num(occurrence.blocked)} unidades`;
   const fileInput = document.querySelector("#methodFile");
   const attachment = document.querySelector("#methodAttachment");
-  const status = document.querySelector("#methodFileStatus");
   const submit = form.querySelector('[type="submit"]');
   const engineering = sessionStorage.getItem("rework-profile") === "Engenharia";
   submit.textContent = engineering ? "Salvar método" : "Salvar e iniciar bipagem";
@@ -1165,59 +1175,75 @@ async function initMethod() {
       : `<p class="muted">Nenhum arquivo anexado a esta ocorrência.</p>`;
     document
       .querySelector("#removeMethodFile")
-      ?.addEventListener("click", () => {
-        if (!window.confirm(`Remover o anexo ${occurrence.methodFile.name} de ${occurrence.id}? A remoção é imediata e não será desfeita pelo botão Cancelar.`)) return;
-        const data = read();
-        const target = data.find((item) => item.id === occurrence.id);
-        if (!target) { feedback("Esta ocorrência não está mais disponível. Volte à lista.", true, status); return; }
-        target.methodFile = null;
-        if (!save(data, status)) return;
-        occurrence.methodFile = null;
-        renderAttachment();
-        feedback("Anexo removido. Você pode escolher outro arquivo e salvar o método.", false, status);
-        fileInput.focus();
+      ?.addEventListener("click", async () => {
+        if (!window.confirm(`Remover o anexo ${occurrence.methodFile.name} de ${occurrence.id}?`)) return;
+        try {
+          await apiRequest(
+            `/api/occurrences/${encodeURIComponent(occurrence.id)}/method/file`,
+            { method: "DELETE" }
+          );
+          occurrence.methodFile = null;
+          renderAttachment();
+          feedback("Anexo removido. Você pode escolher outro arquivo e salvar o método.", false, status);
+          fileInput.focus();
+        } catch (error) {
+          feedback(`Não foi possível remover o anexo: ${error.message}`, true, status);
+        }
       });
   };
   renderAttachment();
   ["cause", "method", "classification", "department", "person"].forEach(
     (key) => (form.elements[key].value = occurrence[key] || ""),
   );
+  // Os dados vieram do banco.
+  // Portanto, neste momento não existem alterações pendentes.
+  markClean(form);
   form.onsubmit = async (event) => {
     event.preventDefault();
     if (saving) return;
     if (!form.reportValidity()) return;
-    const data = read();
-    const target = data.find((item) => item.id === occurrence.id);
-    if (!target) { feedback("Esta ocorrência não está mais disponível. Volte à lista.", true, status); return; }
     const values = new FormData(form);
-    ["cause", "method", "classification", "department", "person"].forEach(
-      (key) => (target[key] = values.get(key).trim()),
-    );
-    const file = fileInput.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        fieldError(fileInput, "O arquivo ultrapassa 2 MB. Escolha um arquivo menor; os demais campos foram mantidos.", status);
-        return;
-      }
-    }
     saving = true;
-    const savedSignature = formSignature(form);
     submit.disabled = true;
     form.setAttribute("aria-busy", "true");
-    feedback("Salvando método e preparando o anexo…", false, status);
+    feedback("Salvando método no banco de dados…", false, status);
     try {
-      if (file) target.methodFile = { name: file.name, type: file.type, data: await fileToDataUrl(file) };
-      if (target.status === "Pendente") target.status = "Iniciado";
-      if (!save(data, status)) return;
-      formSnapshots.set(form, savedSignature);
-      if (isDirty(form)) {
-        feedback("Método salvo. Há novas alterações feitas durante o envio; revise e salve novamente antes de sair.", false, status);
-        return;
-      }
-      navigateWithFeedback(engineering ? "ocorrencias.html" : `seriais.html${params(target.id)}`,
-        `Método de ${target.id} salvo. ${engineering ? "A Qualidade já pode realizar a bipagem." : "Bipe ou digite o próximo serial para iniciar a inspeção."}`);
-    } catch {
-      feedback("Não foi possível ler o anexo. Escolha o arquivo novamente e tente salvar. Seus campos foram mantidos.", true, status);
+      const file = fileInput.files[0];
+      const payload = new FormData();
+      payload.append("causa", values.get("cause")?.trim() || "");
+      payload.append("metodo", values.get("method")?.trim() || "");
+      payload.append("classificacao", values.get("classification")?.trim() || "");
+      payload.append("departamento", values.get("department")?.trim() || "");
+      payload.append("responsavel", values.get("person")?.trim() || "");
+      if (file) payload.append("arquivo", file);
+      await apiRequest(
+        `/api/occurrences/${encodeURIComponent(occurrence.id)}/method`,
+        {
+          method: "POST",
+          body: payload
+        }
+      );
+
+      markClean(form);
+      // Desliga o aviso porque o método já foi salvo.
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+
+      feedback(`Método da ocorrência ${occurrence.id} salvo com sucesso.`, false, status);
+
+      const engineering = sessionStorage.getItem("rework-profile") === "Engenharia";
+      setTimeout(() => {
+        navigateWithFeedback(
+          engineering
+            ? "ocorrencias.html"
+            : `seriais.html${params(occurrence.id)}`,
+          engineering
+            ? `Método de ${occurrence.id} salvo.`
+            : `Método de ${occurrence.id} salvo. Inicie a bipagem.`
+        );
+      }, 500);
+    } catch (error) {
+      console.error("Erro ao salvar método:", error);
+      feedback(`Não foi possível salvar o método: ${error.message}`, true, status);
     } finally {
       saving = false;
       submit.disabled = false;
@@ -1239,12 +1265,12 @@ function fileToDataUrl(file) {
 async function initScans() {
   const form = document.querySelector("#scanForm");
   if (!form) return;
-  const occurrence = await loadCurrentOccurrence(host);
+  const status = document.querySelector("#scanStatus");
+  const occurrence = await loadCurrentOccurrence(status);
   if (!occurrence) return;
   choose(occurrence.id);
   setLinks(occurrence);
   const input = document.querySelector("#serialScan");
-  const status = document.querySelector("#scanStatus");
   const rows = document.querySelector("#scanRows");
   document.querySelector("#scanId").textContent = occurrence.id;
   document.querySelector("#scanRange").textContent =
@@ -1259,22 +1285,26 @@ async function initScans() {
         .join("") ||
       `<tr><td colspan="5" class="empty">Nenhum serial bipado neste bloqueio.</td></tr>`;
     rows.querySelectorAll("[data-delete-scan]").forEach((button) => {
-      button.onclick = () => {
-        const index = occurrence.scans.findIndex(
-          (scan) => scan.serial === button.dataset.deleteScan,
-        );
-        if (index < 0) return;
-        if (!window.confirm(`Excluir o serial ${button.dataset.deleteScan} de ${occurrence.id}? Ele deixará de contar como inspecionado. Você poderá bipá-lo novamente.`)) return;
-        const removed = occurrence.scans.splice(index, 1)[0];
-        const data = read();
-        const targetIndex = data.findIndex((item) => item.id === occurrence.id);
-        if (targetIndex < 0) { occurrence.scans.splice(index, 0, removed); feedback("Ocorrência não encontrada. Volte à lista.", true, status); return; }
-        data[targetIndex] = occurrence;
-        if (!save(data, status)) { occurrence.scans.splice(index, 0, removed); return; }
-        status.className = "status-message success";
-        status.textContent = `Serial ${button.dataset.deleteScan} excluído.`;
-        render();
-        input.focus();
+      button.onclick = async () => {
+        const serial = button.dataset.deleteScan;
+        if (!window.confirm(`Excluir o serial ${serial} de ${occurrence.id}?`)) {
+          return;
+        }
+        try {
+          await apiRequest(
+            `/api/occurrences/${encodeURIComponent(occurrence.id)}/scans/${encodeURIComponent(serial)}`,
+            { method: "DELETE" }
+          );
+          occurrence.scans = occurrence.scans.filter(
+            scan => scan.serial !== serial
+          );
+          status.className = "status-message success";
+          status.textContent = `Serial ${serial} excluído.`;
+          render();
+          input.focus();
+        } catch (error) {
+          feedback(`Erro ao excluir serial: ${error.message}`, true, status);
+        }
       };
     });
     document.querySelector("#scanCount").textContent = inspected(occurrence);
@@ -1282,7 +1312,7 @@ async function initScans() {
       pending(occurrence),
     );
   };
-  const register = (result) => {
+  const register = async (result) => {
     if (!occurrence.method) return;
     const serial = input.value.trim();
     const inRange =
@@ -1301,27 +1331,36 @@ async function initScans() {
         (scan) => scan.serial.toLowerCase() === serial.toLowerCase(),
       )
     ) {
-      const previous = occurrence.scans.find((scan) => scan.serial.toLowerCase() === serial.toLowerCase());
-      fieldError(input, `O serial ${serial} já foi registrado como ${previous.result}. Consulte a leitura abaixo; para corrigir, exclua-a antes de registrar novamente.`, status);
+      const previous = occurrence.scans.find(
+        (scan) => scan.serial.toLowerCase() === serial.toLowerCase()
+      );
+      fieldError(input, `O serial ${serial} já foi registrado como ${previous.result}.`, status);
       return;
     }
-    occurrence.scans.unshift({
-      serial,
-      result,
-      at: new Date().toLocaleString("pt-BR"),
-    });
-    const data = read();
-    const targetIndex = data.findIndex((item) => item.id === occurrence.id);
-    if (targetIndex < 0) { occurrence.scans.shift(); feedback("Ocorrência não encontrada. Volte à lista.", true, status); return; }
-    data[targetIndex] = occurrence;
-    if (!save(data, status)) { occurrence.scans.shift(); return; }
-    status.className = "status-message success";
-    status.textContent = `${serial} registrado como ${result}. ${pending(occurrence) ? "Bipe ou digite o próximo serial." : "Não há unidades pendentes. Revise as leituras e o status da ocorrência."}`;
-    input.value = "";
-    input.removeAttribute("aria-invalid");
-    markClean(form);
-    render();
-    input.focus();
+    try {
+      await apiRequest(
+        `/api/occurrences/${encodeURIComponent(occurrence.id)}/scans`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ serial, resultado: result })
+        }
+      );
+      occurrence.scans.unshift({
+        serial,
+        result,
+        at: new Date().toLocaleString("pt-BR"),
+      });
+      status.className = "status-message success";
+      status.textContent = `${serial} registrado como ${result}.`;
+      input.value = "";
+      input.removeAttribute("aria-invalid");
+      markClean(form);
+      render();
+      input.focus();
+    } catch (error) {
+      fieldError(input, error.message, status);
+    }
   };
   document.querySelector("#okScan").onclick = () => register("OK");
   document.querySelector("#ngScan").onclick = () => register("NG");
@@ -1365,36 +1404,136 @@ async function initDetail() {
   host.innerHTML = `<article class="panel span-8"><h2>Dados do bloqueio</h2><div class="summary-list"><div><span>Parte / processo</span><strong>${esc(occurrence.part)}</strong></div><div><span>Área solicitante</span><strong>${esc(occurrence.area)}</strong></div><div><span>Faixa válida</span><strong>${esc(occurrence.serialStart)} — ${esc(occurrence.serialEnd)}</strong></div><div><span>Responsável</span><strong>${esc(occurrence.person)}</strong></div></div><p class="detail-description"><strong>Descrição</strong><br>${esc(occurrence.description)}</p></article><aside class="panel span-4"><h2>Próxima ação</h2><div class="notice">${occurrence.method ? "Método definido. A bipagem está liberada." : "Defina o método antes de iniciar a bipagem."}</div><a class="primary action-offset" href="${occurrence.method ? "seriais" : "metodo-retrabalho"}.html${params(occurrence.id)}">${occurrence.method ? "Bipar seriais" : "Definir método"}</a></aside>`;
 }
 
-// Cadastro visual de usuários e perfis.
-function initUsers() {
+// Cadastro de usuários pela API e credenciais de primeiro acesso.
+async function initUsers() {
   const dialog = document.querySelector("#userDialog");
   if (!dialog) return;
   const form = document.querySelector("#userForm");
   const rows = document.querySelector("#userRows");
-  document.querySelector("#addUser").onclick = () => { markClean(form); dialog.showModal(); };
+  const carregarUsuarios = async () => {
+    try {
+      const usuarios = await apiRequest("/api/users");
+      rows.innerHTML = usuarios.map((usuario) => {
+        const statusUsuario = !usuario.ativo
+          ? `<span class="badge pending">Inativo</span>`
+          : usuario.troca_senha_obrigatoria
+            ? `<span class="badge pending">Primeiro acesso pendente</span>`
+            : `<span class="badge defined">Ativo</span>`;
+        return `
+        <tr>
+          <td>
+            <strong>${esc(usuario.nome)}</strong>
+            <small class="cell-detail">${esc(usuario.email)}</small>
+          </td>
+          <td>${esc(usuario.area)}</td>
+          <td>${esc(usuario.perfil)}</td>
+          <td>
+            ${statusUsuario}
+          </td>
+        </tr>
+      `;
+      }).join("");
+      if (!usuarios.length) {
+        rows.innerHTML = `
+          <tr>
+            <td colspan="4" class="empty">Nenhum usuário cadastrado.</td>
+          </tr>
+        `;
+      }
+    } catch (error) {
+      console.error("Erro ao carregar usuários:", error);
+      feedback(`Não foi possível carregar os usuários: ${error.message}`, true);
+    }
+  };
+  await carregarUsuarios();
+  const passwordDialog = document.querySelector("#temporaryPasswordDialog");
+  const createdUserName = document.querySelector("#createdUserName");
+  const createdUserEmail = document.querySelector("#createdUserEmail");
+  const temporaryPassword = document.querySelector("#temporaryPassword");
+  const copyPassword = document.querySelector("#copyTemporaryPassword");
+  const finishCreation = document.querySelector("#finishUserCreation");
+  const closeTemporary = document.querySelector("#closeTemporaryPassword");
+  document.querySelector("#addUser").onclick = () => { form.reset(); markClean(form); dialog.showModal(); };
   document
     .querySelectorAll("[data-close-user]")
     .forEach((button) => (button.onclick = () => closeEditor(dialog, form)));
   dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeEditor(dialog, form); });
-  form.onsubmit = (event) => {
+  form.onsubmit = async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
     const values = new FormData(form);
-    const row = document.createElement("tr");
-    row.innerHTML = `<td>${esc(values.get("name"))}</td><td>${esc(values.get("area"))}</td><td>${esc(values.get("profile"))}</td><td><span class="badge defined">Ativo</span></td>`;
-    rows.appendChild(row);
-    form.reset();
-    markClean(form);
-    dialog.close();
-    feedback(`Usuário ${values.get("name")} adicionado à demonstração desta página. Este cadastro não cria credenciais e será removido ao recarregar.`);
+    try {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: values.get("name"),
+          email: values.get("email"),
+          area: values.get("area"),
+          perfil: values.get("profile")
+        })
+      });
+      const resultado = await response.json();
+      if (!response.ok) {
+        throw new Error(resultado.mensagem || "Não foi possível criar o usuário.");
+      }
+      await carregarUsuarios();
+      markClean(form);
+      dialog.close();
+      form.reset();
+      createdUserName.textContent = resultado.usuario.nome;
+      createdUserEmail.textContent = resultado.usuario.email;
+      temporaryPassword.textContent = resultado.senha_temporaria;
+      passwordDialog.showModal();
+    } catch (error) {
+      console.error(error);
+      feedback(error.message, true);
+    }
   };
+
+  copyPassword?.addEventListener("click", async () => {
+    const password = temporaryPassword.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(password);
+      copyPassword.textContent = "Senha copiada";
+      setTimeout(() => { copyPassword.textContent = "Copiar senha"; }, 2000);
+    } catch {
+      feedback("Não foi possível copiar automaticamente. Selecione a senha e copie manualmente.", true);
+    }
+  });
+
+  const fecharSenhaTemporaria = () => {
+    temporaryPassword.textContent = "-";
+    createdUserName.textContent = "-";
+    createdUserEmail.textContent = "-";
+    copyPassword.textContent = "Copiar senha";
+    passwordDialog.close();
+  };
+  finishCreation?.addEventListener("click", fecharSenhaTemporaria);
+  closeTemporary?.addEventListener("click", fecharSenhaTemporaria);
+  passwordDialog.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    fecharSenhaTemporaria();
+  });
 }
 
 // Gera, imprime e exporta relatórios a partir das ocorrências salvas.
-function initReports() {
+async function initReports() {
   const output = document.querySelector("#reportOutput");
   if (!output) return;
-  const data = read();
+  let data = [];
+
+  try {
+    const rows = await apiRequest("/api/occurrences");
+    data = rows.map(occurrenceFromApi);
+  } catch (error) {
+    console.error("Erro ao carregar relatórios:", error);
+    feedback(
+      `Não foi possível carregar os dados do relatório: ${error.message}`,
+      true
+    );
+    return;
+  }
   const start = document.querySelector("#reportStart");
   const end = document.querySelector("#reportEnd");
   const status = document.querySelector("#reportStatus");

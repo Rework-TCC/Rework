@@ -10,10 +10,21 @@ CREATE TABLE perfil (
 
 CREATE TABLE usuario (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+
     nome VARCHAR(150) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
+    area VARCHAR(100) NOT NULL,
+
     senha_hash VARCHAR(255) NOT NULL,
+
+    troca_senha_obrigatoria BOOLEAN NOT NULL DEFAULT TRUE,
+
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    senha_atualizada_em DATETIME NULL,
+
     id_perfil INT NOT NULL,
 
     CONSTRAINT fk_usuario_perfil

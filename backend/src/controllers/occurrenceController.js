@@ -2,7 +2,7 @@ const db = require("../config/database");
 
 async function listarOcorrencias(req, res) {
   try {
-    const [rows] = await db.query(`
+    const [ocorrencias] = await db.query(`
       SELECT
         o.*,
         l.nome AS linha,
@@ -15,12 +15,70 @@ async function listarOcorrencias(req, res) {
       ORDER BY o.data_abertura DESC
     `);
 
-    res.json(rows);
+    if (!ocorrencias.length) {
+      return res.json([]);
+    }
+
+    const ids = ocorrencias.map(
+      occurrence => occurrence.id_ocorrencia
+    );
+
+    const placeholders =
+      ids.map(() => "?").join(",");
+
+    const [scans] = await db.query(
+      `
+      SELECT
+        id_ocorrencia,
+        serial,
+        resultado AS result,
+        data_hora AS at
+      FROM inspecao_serial
+      WHERE id_ocorrencia IN (${placeholders})
+      ORDER BY data_hora DESC
+      `,
+      ids
+    );
+
+    const [metodos] = await db.query(
+      `
+      SELECT *
+      FROM metodo_retrabalho
+      WHERE id_ocorrencia IN (${placeholders})
+      `,
+      ids
+    );
+
+    const resultado = ocorrencias.map(
+      occurrence => ({
+        ...occurrence,
+
+        scans: scans.filter(
+          scan =>
+            scan.id_ocorrencia ===
+            occurrence.id_ocorrencia
+        ),
+
+        metodo:
+          metodos.find(
+            metodo =>
+              metodo.id_ocorrencia ===
+              occurrence.id_ocorrencia
+          ) || null
+      })
+    );
+
+    res.json(resultado);
+
   } catch (error) {
-    console.error("Erro ao listar ocorrências:", error);
+    console.error(
+      "Erro ao listar ocorrências:",
+      error
+    );
 
     res.status(500).json({
-      mensagem: "Erro ao buscar ocorrências"
+      mensagem:
+        "Erro ao buscar ocorrências"
     });
   }
 }

@@ -918,6 +918,24 @@ td.wrap {
   line-height: 1.25;
 }
 
+.temporary-access {
+  display: grid;
+  gap: 15px;
+}
+
+.temporary-password-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.temporary-access strong,
+.temporary-password-box code {
+  overflow-wrap: anywhere;
+}
+
 .quantity-stack {
   display: grid;
   gap: 2px;
