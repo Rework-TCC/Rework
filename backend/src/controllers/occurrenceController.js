@@ -376,6 +376,52 @@ async function buscarOcorrencia(req, res) {
   }
 }
 
+async function atualizarCustos(req, res) {
+  try {
+    const { custo_container_hora, custo_atraso_venda_hora } = req.body;
+    const custoContainer = Number(custo_container_hora);
+    const custoAtraso = Number(custo_atraso_venda_hora);
+
+    if (
+      !Number.isFinite(custoContainer) ||
+      !Number.isFinite(custoAtraso) ||
+      custoContainer < 0 ||
+      custoAtraso < 0
+    ) {
+      return res.status(400).json({
+        mensagem: "Os valores de custo devem ser números válidos e não negativos."
+      });
+    }
+
+    const [result] = await db.query(
+      `
+      UPDATE ocorrencia_retrabalho
+      SET
+        custo_container_hora = ?,
+        custo_atraso_venda_hora = ?
+      WHERE protocolo = ?
+      `,
+      [custoContainer, custoAtraso, req.params.protocolo]
+    );
+
+    if (!result.affectedRows) {
+      return res.status(404).json({
+        mensagem: "Ocorrência não encontrada."
+      });
+    }
+
+    res.json({ mensagem: "Custos atualizados com sucesso." });
+  } catch (error) {
+    console.error("Erro ao atualizar custos:", error);
+    res.status(500).json({ mensagem: "Erro ao atualizar custos." });
+  }
+}
+
 module.exports = {
-  listarOcorrencias, criarOcorrencia, atualizarOcorrencia, excluirOcorrencia, buscarOcorrencia
+  listarOcorrencias,
+  criarOcorrencia,
+  atualizarOcorrencia,
+  atualizarCustos,
+  excluirOcorrencia,
+  buscarOcorrencia
 };

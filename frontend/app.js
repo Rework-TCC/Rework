@@ -601,30 +601,360 @@ const NAV_ICONS = {
 // Controla o login e o acesso público da Produção.
 function initLogin() {
   const form = document.querySelector("#login");
+
   if (!form) return false;
-  const email = document.querySelector("#email");
-  const password = document.querySelector("#password");
-  const status = document.querySelector("#loginStatus");
+
+  const email =
+    document.querySelector("#email");
+
+  const password =
+    document.querySelector("#password");
+
+  const status =
+    document.querySelector("#loginStatus");
+
+  const submit =
+    form.querySelector('[type="submit"]');
+
   document
     .querySelector("#togglePassword")
-    ?.addEventListener("click", (event) => {
-      const show = password.type === "password";
-      password.type = show ? "text" : "password";
-      event.currentTarget.textContent = show ? "Ocultar" : "Mostrar";
-      event.currentTarget.setAttribute("aria-pressed", String(show));
-    });
-  document.querySelector("#publicDashboard")?.addEventListener("click", () => {
-    sessionStorage.setItem("rework-profile", "Produção");
-  });
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) return;
-    const profile = form.elements.profile.value;
-    sessionStorage.setItem("rework-profile", profile);
-    status.textContent = "Acesso demonstrativo selecionado. Abrindo o painel…";
-    location.href = "dashboard.html";
-  });
+    ?.addEventListener(
+      "click",
+      (event) => {
+        const show =
+          password.type === "password";
+
+        password.type =
+          show ? "text" : "password";
+
+        event.currentTarget.textContent =
+          show ? "Ocultar" : "Mostrar";
+
+        event.currentTarget.setAttribute(
+          "aria-pressed",
+          String(show)
+        );
+      }
+    );
+
+  document
+    .querySelector("#publicDashboard")
+    ?.addEventListener(
+      "click",
+      async (event) => {
+        event.preventDefault();
+
+        try {
+          await fetch(
+            "/api/auth/logout",
+            {
+              method: "POST"
+            }
+          );
+        } catch {
+          // Produção pode não possuir
+          // uma sessão autenticada.
+        }
+
+        sessionStorage.setItem(
+          "rework-profile",
+          "Produção"
+        );
+
+        sessionStorage.removeItem(
+          "rework-user-name"
+        );
+
+        location.href =
+          "dashboard.html";
+      }
+    );
+
+  form.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      const profile =
+        form.elements.profile.value;
+
+      submit.disabled = true;
+
+      status.className =
+        "status-message";
+
+      status.textContent =
+        "Validando acesso…";
+
+      try {
+        const resultado =
+          await apiRequest(
+            "/api/auth/login",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                email:
+                  email.value.trim(),
+
+                senha:
+                  password.value,
+
+                perfil:
+                  profile
+              })
+            }
+          );
+
+        sessionStorage.setItem(
+          "rework-profile",
+          resultado.usuario.perfil
+        );
+
+        sessionStorage.setItem(
+          "rework-user-name",
+          resultado.usuario.nome
+        );
+
+        status.className =
+          "status-message success";
+
+        if (
+          resultado
+            .troca_senha_obrigatoria
+        ) {
+          status.textContent =
+            "Primeiro acesso. Cadastre uma nova senha…";
+
+          location.href =
+            "alterar-senha.html";
+
+          return;
+        }
+
+        status.textContent =
+          "Login realizado. Abrindo o sistema…";
+
+        location.href =
+          "dashboard.html";
+
+      } catch (error) {
+        status.className =
+          "status-message error";
+
+        status.textContent =
+          error.message;
+
+      } finally {
+        submit.disabled = false;
+      }
+    }
+  );
+
   return true;
+}
+
+async function initChangePassword() {
+  const form =
+    document.querySelector(
+      "#changePasswordForm"
+    );
+
+  if (!form) return false;
+
+  const status =
+    document.querySelector(
+      "#changePasswordStatus"
+    );
+
+  const userName =
+    document.querySelector(
+      "#changePasswordUser"
+    );
+
+  const submit =
+    form.querySelector(
+      '[type="submit"]'
+    );
+
+  try {
+    const resultado =
+      await apiRequest(
+        "/api/auth/me"
+      );
+
+    const usuario =
+      resultado.usuario;
+
+    userName.textContent =
+      usuario.nome;
+
+    sessionStorage.setItem(
+      "rework-profile",
+      usuario.perfil
+    );
+
+    sessionStorage.setItem(
+      "rework-user-name",
+      usuario.nome
+    );
+
+    if (
+      !usuario
+        .troca_senha_obrigatoria
+    ) {
+      location.replace(
+        "dashboard.html"
+      );
+
+      return true;
+    }
+
+  } catch {
+    sessionStorage.removeItem(
+      "rework-profile"
+    );
+
+    sessionStorage.removeItem(
+      "rework-user-name"
+    );
+
+    location.replace(
+      "index.html"
+    );
+
+    return true;
+  }
+
+
+  form.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      const novaSenha =
+        form.elements
+          .newPassword.value;
+
+      const confirmarSenha =
+        form.elements
+          .confirmPassword.value;
+
+      if (
+        novaSenha !==
+        confirmarSenha
+      ) {
+        status.className =
+          "status-message error";
+
+        status.textContent =
+          "As senhas não coincidem.";
+
+        return;
+      }
+
+      submit.disabled = true;
+
+      status.className =
+        "status-message";
+
+      status.textContent =
+        "Atualizando senha…";
+
+      try {
+        await apiRequest(
+          "/api/auth/change-password",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              nova_senha:
+                novaSenha,
+
+              confirmar_senha:
+                confirmarSenha
+            })
+          }
+        );
+
+        status.className =
+          "status-message success";
+
+        status.textContent =
+          "Senha alterada com sucesso. Abrindo o sistema…";
+
+        setTimeout(() => {
+          location.href =
+            "dashboard.html";
+        }, 600);
+
+      } catch (error) {
+        status.className =
+          "status-message error";
+
+        status.textContent =
+          error.message;
+
+      } finally {
+        submit.disabled = false;
+      }
+    }
+  );
+
+  return true;
+}
+
+async function validarSessaoDaPagina() {
+  const page = location.pathname.split("/").pop();
+  const profileLocal = sessionStorage.getItem("rework-profile");
+
+  // Produção continua pública, mas somente no Dashboard.
+  if (page === "dashboard.html" && profileLocal === "Produção") {
+    return {
+      perfil: "Produção",
+      nome: "Produção",
+      acessoPublico: true
+    };
+  }
+
+  try {
+    const resultado = await apiRequest("/api/auth/me");
+    const usuario = resultado.usuario;
+
+    // Atualiza a interface com o perfil real vindo do servidor.
+    sessionStorage.setItem("rework-profile", usuario.perfil);
+    sessionStorage.setItem("rework-user-name", usuario.nome);
+
+    if (usuario.troca_senha_obrigatoria) {
+      location.replace("alterar-senha.html");
+      return null;
+    }
+
+    return usuario;
+  } catch (error) {
+    sessionStorage.removeItem("rework-profile");
+    sessionStorage.removeItem("rework-user-name");
+    location.replace("index.html");
+    return null;
+  }
 }
 
 // Monta o menu conforme as permissões do perfil ativo.
@@ -633,6 +963,7 @@ function renderShell() {
   if (!sidebar) return;
   const active = sidebar.dataset.active;
   const profile = sessionStorage.getItem("rework-profile") || "Produção";
+  const userName = sessionStorage.getItem("rework-user-name");
   const operational =
     profile === "Produção"
       ? [["dashboard", "Dashboard", "dashboard.html", "dashboard"]]
@@ -654,7 +985,7 @@ function renderShell() {
       ${operational.map((item) => `<a class="${active === item[0] ? "active" : ""}" href="${item[2]}" title="${item[1]}"><span class="nav-icon">${NAV_ICONS[item[3]]}</span><span class="nav-label">${item[1]}</span></a>`).join("")}
     </nav></div>
     ${profile === "Qualidade" ? `<div class="nav-group"><small>Gestão</small><nav><a class="${active === "reports" ? "active" : ""}" href="relatorios.html" title="Relatórios"><span class="nav-icon">${NAV_ICONS.reports}</span><span class="nav-label">Relatórios</span></a><a class="${active === "users" ? "active" : ""}" href="usuarios.html" title="Usuários e perfis"><span class="nav-icon">${NAV_ICONS.users}</span><span class="nav-label">Usuários e perfis</span></a></nav></div>` : ""}
-    <div class="sidebar-profile"><strong>Usuário ${profile}</strong><small>Perfil demonstrativo</small><button class="link-button" data-logout>Sair</button></div>`;
+    <div class="sidebar-profile"><strong>${profile === "Produção" ? "Produção" : esc(userName || "Usuário")}</strong><small>${profile === "Produção" ? "Acesso público" : `Perfil ${esc(profile)}`}</small><button class="link-button" data-logout>Sair</button></div>`;
 }
 
 function bindGlobal() {
@@ -666,11 +997,24 @@ function bindGlobal() {
     element.hidden = profile === "Produção";
   });
   document.querySelectorAll("[data-logout]").forEach((button) => {
-    button.onclick = () => {
-      if (!confirmDiscard()) return;
+    button.onclick = async () => {
+      if (!confirmDiscard()) {
+        return;
+      }
+
       pendingForms().forEach(markClean);
-      sessionStorage.removeItem("rework-profile");
-      location.href = "index.html";
+
+      try {
+        await fetch("/api/auth/logout", {
+          method: "POST"
+        });
+      } catch (error) {
+        console.error("Erro ao encerrar sessão:", error);
+      } finally {
+        sessionStorage.removeItem("rework-profile");
+        sessionStorage.removeItem("rework-user-name");
+        location.href = "index.html";
+      }
     };
   });
   const updateSidebarState = () => {
@@ -984,24 +1328,34 @@ async function initOccurrences() {
     if (submit.disabled) return;
     submit.disabled = true;
     const savedSignature = formSignature(form);
-    const quality = profile === "Qualidade";
     try {
-      await apiRequest(`/api/occurrences/${encodeURIComponent(editingId)}`, {
+      if (profile === "Expedição") {
+        await apiRequest(`/api/occurrences/${encodeURIComponent(editingId)}/costs`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            custo_container_hora: Number(values.get("containerHourlyCost") || 0),
+            custo_atraso_venda_hora: Number(values.get("salesDelayHourlyCost") || 0)
+          })
+        });
+      } else {
+        await apiRequest(`/api/occurrences/${encodeURIComponent(editingId)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          linha: quality ? values.get("line") : original.line,
-          modelo: quality ? values.get("model") : original.model,
-          defeito: quality ? values.get("defect") : original.defect,
-          descricao_problema: quality ? values.get("description") : original.description,
-          serial_inicial: quality ? serialStart : original.serialStart,
-          serial_final: quality ? serialEnd : original.serialEnd,
-          quantidade_bloqueada: quality ? Number(values.get("blocked")) : original.blocked,
-          status: quality ? values.get("status") : original.status,
+          linha: values.get("line"),
+          modelo: values.get("model"),
+          defeito: values.get("defect"),
+          descricao_problema: values.get("description"),
+          serial_inicial: serialStart,
+          serial_final: serialEnd,
+          quantidade_bloqueada: Number(values.get("blocked")),
+          status: values.get("status"),
           custo_container_hora: Number(values.get("containerHourlyCost") || 0),
           custo_atraso_venda_hora: Number(values.get("salesDelayHourlyCost") || 0)
         })
       });
+      }
       formSnapshots.set(form, savedSignature);
       dialog.close();
       feedback(`Ocorrência ${editingId} atualizada com sucesso.`);
@@ -1869,18 +2223,23 @@ function initNew() {
 }
 
 // Inicializa somente os recursos existentes na página aberta.
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   initPreferences();
   if (initLogin()) {
     translatePage();
     return;
   }
-  const activeProfile = sessionStorage.getItem("rework-profile");
   const page = location.pathname.split("/").pop();
-  if (!activeProfile && page !== "dashboard.html") {
-    location.replace("index.html");
+  if (page === "alterar-senha.html") {
+    initChangePassword();
+    translatePage();
     return;
   }
+  const usuario = await validarSessaoDaPagina();
+  if (!usuario) {
+    return;
+  }
+  const activeProfile = usuario.perfil;
   if (activeProfile === "Produção" && page !== "dashboard.html") {
     location.replace("dashboard.html");
     return;
