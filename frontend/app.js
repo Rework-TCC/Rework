@@ -388,7 +388,7 @@ const ENGLISH = {
   "Qualidade hoje,": "Quality today,",
   "produz confiança amanhã.": "builds trust tomorrow.",
   "Bem-vindo ao Rework": "Welcome to Rework",
-  "Escolha seu perfil para acessar o sistema.": "Choose your profile to access the system.",
+  "Informe suas credenciais para acessar o sistema.": "Enter your credentials to access the system.",
   "Acessar modo demonstração": "Open demonstration mode",
   "Produção: consulte o Dashboard sem preencher o formulário.": "Production: view the Dashboard without filling out the form.",
   "Protótipo acadêmico.": "Academic prototype.",
@@ -679,9 +679,6 @@ function initLogin() {
         return;
       }
 
-      const profile =
-        form.elements.profile.value;
-
       submit.disabled = true;
 
       status.className =
@@ -707,10 +704,7 @@ function initLogin() {
                   email.value.trim(),
 
                 senha:
-                  password.value,
-
-                perfil:
-                  profile
+                  password.value
               })
             }
           );
@@ -1072,8 +1066,8 @@ function occurrenceActions(occurrence, profile) {
   if (profile === "Engenharia")
     return methodLink;
   const actions = occurrence.method
-    ? `<a href="seriais.html${params(occurrence.id)}" data-select="${occurrence.id}">Bipar${context}</a>${methodLink}`
-    : methodLink;
+    ? `<a href="seriais.html${params(occurrence.id)}" data-select="${occurrence.id}">Bipar${context}</a>`
+    : "";
   return (profile === "Qualidade" ? `<a href="detalhes-ocorrencia.html${params(occurrence.id)}">Ver detalhes${context}</a>` : "") + actions + (profile === "Qualidade"
     ? `<button class="danger compact-action" type="button" data-delete-occurrence="${esc(occurrence.id)}" aria-label="${en ? "Delete occurrence" : "Excluir ocorrência"} ${esc(occurrence.id)}">${en ? "Delete" : "Excluir"}</button>`
     : "");
@@ -2104,44 +2098,14 @@ function initNew() {
     if (step2.hidden) { showStep(true); return; }
     if (!form.reportValidity()) return;
     const values = new FormData(form);
-    const data = read();
     const serialStart = values.get("serialStart").trim();
     const serialEnd = values.get("serialEnd").trim();
     const blocked = Number(values.get("blocked"));
     const detected = Number(values.get("detected"));
-    const currentIds = data
-      .map((item) => Number(item.id.split("-")[1]))
-      .filter(Number.isFinite);
-    const id = `RW-${String(Math.max(0, ...currentIds) + 1).padStart(3, "0")}`;
     const containers = values.getAll("containerId").map((value, index) => ({
       id: value,
       qty: Number(values.getAll("containerQty")[index]),
     }));
-    const occurrence = {
-      id,
-      date: new Date().toLocaleDateString("pt-BR"),
-      line: values.get("line"),
-      part: values.get("part"),
-      defect: values.get("defect"),
-      description: values.get("description"),
-      serialStart,
-      serialEnd,
-      blocked,
-      model: values.get("model"),
-      area: values.get("area"),
-      detected,
-      classification: values.get("classification"),
-      department: values.get("department"),
-      person: values.get("person"),
-      cause: values.get("cause"),
-      method: values.get("method"),
-      containerHourlyCost: Number(values.get("containerHourlyCost") || 0),
-      salesDelayHourlyCost: Number(values.get("salesDelayHourlyCost") || 0),
-      createdAt: new Date().toISOString(),
-      status: "Pendente",
-      containers,
-      scans: [],
-    };
     const newStatus = document.querySelector("#newStatus");
     if (
       serialStart.localeCompare(serialEnd, undefined, {
@@ -2160,7 +2124,7 @@ function initNew() {
     }
     if (
       containers.reduce((total, item) => total + item.qty, 0) !==
-      occurrence.blocked
+      blocked
     ) {
       newStatus.textContent =
         "A soma dos containers deve ser igual à quantidade bloqueada.";
@@ -2191,26 +2155,28 @@ function initNew() {
 
           status: "Pendente",
 
-          custo_container_hora:
-            Number(values.get("containerHourlyCost") || 0),
+          custo_container_hora: 0,
 
-          custo_atraso_venda_hora:
-            Number(values.get("salesDelayHourlyCost") || 0),
+          custo_atraso_venda_hora: 0,
 
           containers: containers
         }),
       });
       const resultado = await response.json();
+
       if (!response.ok) {
-        throw new Error(resultado.mensagem || "Erro ao criar ocorrência");
+        throw new Error(
+          resultado.mensagem ||
+          "Erro ao criar ocorrência"
+        );
       }
+
       markClean(form);
-      feedback(
-        `Ocorrência ${resultado.protocolo} criada com sucesso no banco de dados.`,
-        false,
-        newStatus
+
+      navigateWithFeedback(
+        "ocorrencias.html",
+        `Ocorrência ${resultado.protocolo} criada com sucesso.`
       );
-      console.log(resultado);
     } catch (error) {
       console.error(error);
       feedback(
@@ -2242,6 +2208,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const activeProfile = usuario.perfil;
   if (activeProfile === "Produção" && page !== "dashboard.html") {
     location.replace("dashboard.html");
+    return;
+  }
+  if (page === "metodo-retrabalho.html" && activeProfile !== "Engenharia") {
+    location.replace("ocorrencias.html");
     return;
   }
   const allowedPages = {

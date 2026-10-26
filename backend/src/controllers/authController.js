@@ -3,19 +3,11 @@ const bcrypt = require("bcryptjs");
 
 async function login(req, res) {
   try {
-    const { email, senha, perfil } = req.body;
+    const { email, senha } = req.body;
 
-    if (!email || !senha || !perfil) {
+    if (!email || !senha) {
       return res.status(400).json({
-        mensagem: "E-mail, senha e perfil são obrigatórios."
-      });
-    }
-
-    const perfisPermitidos = ["Qualidade", "Engenharia", "Expedição"];
-
-    if (!perfisPermitidos.includes(perfil)) {
-      return res.status(400).json({
-        mensagem: "Perfil de acesso inválido."
+        mensagem: "E-mail e senha são obrigatórios."
       });
     }
 
@@ -46,6 +38,14 @@ async function login(req, res) {
 
     const usuario = usuarios[0];
 
+    const perfisComLogin = ["Qualidade", "Engenharia", "Expedição"];
+
+    if (!perfisComLogin.includes(usuario.perfil)) {
+      return res.status(403).json({
+        mensagem: "Este perfil não utiliza acesso autenticado."
+      });
+    }
+
     if (!usuario.ativo) {
       return res.status(401).json({
         mensagem: "E-mail ou senha inválidos."
@@ -57,12 +57,6 @@ async function login(req, res) {
     if (!senhaCorreta) {
       return res.status(401).json({
         mensagem: "E-mail ou senha inválidos."
-      });
-    }
-
-    if (usuario.perfil !== perfil) {
-      return res.status(403).json({
-        mensagem: "O perfil selecionado não corresponde ao perfil cadastrado."
       });
     }
 

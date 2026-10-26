@@ -21,7 +21,7 @@
       <div class="stepper" aria-label="Etapas">
         <span id="stepMark1" class="step active" aria-current="step"><b>1</b>Bloqueio</span
         ><i class="step-line"></i
-        ><span id="stepMark2" class="step"><b>2</b>Fluxo e containers</span>
+        ><span id="stepMark2" class="step"><b>2</b>Containers</span>
       </div>
       <!-- Cadastro dividido entre dados do bloqueio e fluxo de execução. -->
       <form id="newOccurrence" novalidate>
@@ -104,66 +104,11 @@
           </div>
         </section>
         <section id="step2" class="panel" hidden>
-          <h2 id="step2Title" tabindex="-1">Fluxo e containers</h2>
-          <div class="method-fields">
-            <div class="field">
-              <label for="cause">Possível causa</label>
-              <input id="cause" name="cause" />
-            </div>
-            <div class="field">
-              <label for="method">Método de retrabalho</label>
-              <textarea id="method" name="method" rows="3"></textarea>
-              <small>Pode ser definido mais tarde pela ação da tabela.</small>
-            </div>
-            <div class="field">
-              <label for="classification">Categoria *</label
-              ><input id="classification" name="classification" required />
-            </div>
-            <div class="field">
-              <label for="department">Departamento responsável *</label
-              ><input id="department" name="department" required /><small
-                >Campo livre.</small
-              >
-            </div>
-            <div class="field">
-              <label for="person">Pessoa responsável *</label
-              ><input id="person" name="person" required /><small
-                >Campo livre.</small
-              >
-            </div>
-            <div class="cost-fields">
-              <div class="field">
-                <label for="containerHourlyCost"
-                  >Aluguel dos containers por hora (R$)</label
-                >
-                <input
-                  id="containerHourlyCost"
-                  name="containerHourlyCost"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value="0"
-                />
-              </div>
-              <div class="field">
-                <label for="salesDelayHourlyCost"
-                  >Atraso da venda por hora (R$)</label
-                >
-                <input
-                  id="salesDelayHourlyCost"
-                  name="salesDelayHourlyCost"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value="0"
-                />
-              </div>
-              <small class="muted"
-                >Campos opcionais. A Expedição também pode preenchê-los
-                depois.</small
-              >
-            </div>
-          </div>
+          <h2 id="step2Title" tabindex="-1">Containers</h2>
+          <p>
+            Distribua a quantidade bloqueada entre os containers.
+            O método de retrabalho será definido posteriormente pela Engenharia.
+          </p>
           <h3 class="section-spacing">Containers e quantidades</h3>
           <p class="muted">A soma deve ser igual à quantidade bloqueada.</p>
           <p id="containerTotals" class="notice" role="status" aria-live="polite"></p>

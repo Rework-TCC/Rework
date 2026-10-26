@@ -101,8 +101,6 @@ async function criarOcorrencia(req, res) {
       quantidade_detectada,
       area_solicitante,
       status,
-      custo_container_hora,
-      custo_atraso_venda_hora,
       containers = []
     } = req.body;
 
@@ -225,8 +223,8 @@ async function criarOcorrencia(req, res) {
         quantidade_detectada,
         area_solicitante,
         status || "Pendente",
-        custo_container_hora || 0,
-        custo_atraso_venda_hora || 0,
+        0,
+        0,
         idLinha,
         idModelo
       ]
@@ -293,8 +291,7 @@ async function atualizarOcorrencia(req, res) {
     await connection.beginTransaction();
     const { protocolo } = req.params;
     const { linha, modelo, defeito, descricao_problema, serial_inicial,
-      serial_final, quantidade_bloqueada, status, custo_container_hora,
-      custo_atraso_venda_hora } = req.body;
+      serial_final, quantidade_bloqueada, status } = req.body;
     const [existentes] = await connection.query(
       "SELECT id_ocorrencia FROM ocorrencia_retrabalho WHERE protocolo = ? FOR UPDATE", [protocolo]);
     if (!existentes.length) {
@@ -318,14 +315,12 @@ async function atualizarOcorrencia(req, res) {
     await connection.query(`
       UPDATE ocorrencia_retrabalho SET
         defeito = ?, descricao_problema = ?, serial_inicial = ?, serial_final = ?,
-        quantidade_bloqueada = ?, status = ?, custo_container_hora = ?,
-        custo_atraso_venda_hora = ?, id_linha = ?, id_modelo = ?,
+        quantidade_bloqueada = ?, status = ?, id_linha = ?, id_modelo = ?,
         resolvido_em = CASE WHEN ? = 'Finalizado'
           THEN COALESCE(resolvido_em, NOW()) ELSE NULL END
       WHERE protocolo = ?
     `, [defeito, descricao_problema, serial_inicial, serial_final,
-      quantidade_bloqueada, status, custo_container_hora || 0,
-      custo_atraso_venda_hora || 0, idLinha, idModelo, status, protocolo]);
+      quantidade_bloqueada, status, idLinha, idModelo, status, protocolo]);
     await connection.commit();
     res.json({ mensagem: "Ocorrência atualizada com sucesso" });
   } catch (error) {

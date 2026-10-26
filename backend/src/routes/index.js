@@ -110,12 +110,12 @@ router.delete(
   excluirOcorrencia
 );
 
-// Qualidade e Engenharia podem definir o método.
+// Somente Engenharia pode definir o método.
 router.post(
   "/occurrences/:protocolo/method",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade", "Engenharia"),
+  permitirPerfis("Engenharia"),
   uploadMetodo,
   salvarMetodo
 );
@@ -124,7 +124,7 @@ router.delete(
   "/occurrences/:protocolo/method/file",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade", "Engenharia"),
+  permitirPerfis("Engenharia"),
   removerArquivoMetodo
 );
 
