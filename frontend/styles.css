@@ -1491,3 +1491,28 @@ input::placeholder, textarea::placeholder { color: var(--text-secondary); opacit
 /* Keep long identifiers and enlarged text within narrow layouts. */
 .app-main, .login-card, .login-story { overflow-wrap: anywhere; }
 .field { min-width: 0; }
+
+.profile-dot.admin {
+  background: var(--red);
+}
+
+.user-profile-select {
+  min-width: 145px;
+}
+
+.request-access-block {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.request-access-block p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.table-actions {
+  flex-wrap: wrap;
+}

@@ -272,3 +272,20 @@
   .industry-art { left: 5%; height: 800px; width: 130%; opacity: 0.2; }
   .blue-ribbon { height: 300px; width: 100%; }
 }
+.access-request-shell {
+  grid-template-columns:
+    minmax(320px, 560px);
+
+  justify-content: center;
+}
+
+.access-request-shell
+.login-card {
+  max-width: 560px;
+  justify-self: center;
+}
+
+.access-request-shell
+.login-form {
+  gap: 13px;
+}

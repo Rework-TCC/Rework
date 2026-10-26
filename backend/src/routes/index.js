@@ -1,18 +1,35 @@
 const { Router } = require("express");
+
 const {
   login,
   usuarioAtual,
   logout,
   trocarSenha
 } = require("../controllers/authController");
-const { showHome } = require("../controllers/homeController");
-const { criarUsuario, listarUsuarios } = require("../controllers/userController");
+
+const {
+  listarUsuarios,
+  atualizarPerfilUsuario,
+  atualizarStatusUsuario
+} = require("../controllers/userController");
+
+const {
+  solicitarAcesso,
+  listarSolicitacoes,
+  listarPendentes,
+  aprovarSolicitacao,
+  rejeitarSolicitacao
+} = require(
+  "../controllers/accessRequestController"
+);
+
 const {
   exigirAutenticacao,
   exigirSenhaAtualizada,
   permitirPerfis
-} = require("../middlewares/authMiddleware");
-const db = require("../config/database");
+} = require(
+  "../middlewares/authMiddleware"
+);
 
 const {
   listarOcorrencias,
@@ -21,101 +38,262 @@ const {
   atualizarCustos,
   excluirOcorrencia,
   buscarOcorrencia
-} = require("../controllers/occurrenceController");
+} = require(
+  "../controllers/occurrenceController"
+);
 
-const { salvarMetodo, removerArquivoMetodo } = require("../controllers/methodController");
-const { uploadMetodo } = require("../middlewares/uploadMethod");
-const { registrarSerial, excluirSerial } = require("../controllers/scanController");
+const {
+  salvarMetodo,
+  removerArquivoMetodo
+} = require(
+  "../controllers/methodController"
+);
+
+const {
+  uploadMetodo
+} = require(
+  "../middlewares/uploadMethod"
+);
+
+const {
+  registrarSerial,
+  excluirSerial
+} = require(
+  "../controllers/scanController"
+);
+
+const {
+  showHome
+} = require(
+  "../controllers/homeController"
+);
+
+const db =
+  require("../config/database");
 
 const router = Router();
 
-router.post("/auth/login", login);
-router.get("/auth/me", usuarioAtual);
+/* =========================
+   AUTENTICAÇÃO
+========================= */
+
+router.post(
+  "/auth/login",
+  login
+);
+
+router.get(
+  "/auth/me",
+  usuarioAtual
+);
+
 router.post(
   "/auth/change-password",
   trocarSenha
 );
-router.post("/auth/logout", logout);
 
-router.get("/health", showHome);
+router.post(
+  "/auth/logout",
+  logout
+);
 
-router.get("/database-test", async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      "SELECT * FROM perfil ORDER BY id_perfil"
-    );
+/* =========================
+   SOLICITAÇÃO PÚBLICA
+========================= */
 
-    res.json({
-      banco: "conectado",
-      dados: rows
-    });
+router.post(
+  "/access-requests",
+  solicitarAcesso
+);
 
-  } catch (error) {
-    console.error(error);
+/* =========================
+   ADMINISTRAÇÃO
+========================= */
 
-    res.status(500).json({
-      banco: "erro",
-      mensagem: error.message
-    });
+router.get(
+  "/access-requests",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  listarSolicitacoes
+);
+
+router.get(
+  "/access-requests/pending",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  listarPendentes
+);
+
+router.post(
+  "/access-requests/:id/approve",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  aprovarSolicitacao
+);
+
+router.post(
+  "/access-requests/:id/reject",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  rejeitarSolicitacao
+);
+
+router.get(
+  "/users",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  listarUsuarios
+);
+
+router.patch(
+  "/users/:id/profile",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  atualizarPerfilUsuario
+);
+
+router.patch(
+  "/users/:id/status",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  atualizarStatusUsuario
+);
+
+/* =========================
+   SISTEMA
+========================= */
+
+router.get(
+  "/health",
+  showHome
+);
+
+router.get(
+  "/database-test",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis("Administrador"),
+  async (req, res) => {
+    try {
+      const [rows] =
+        await db.query(
+          `
+          SELECT *
+          FROM perfil
+          ORDER BY id_perfil
+          `
+        );
+
+      res.json({
+        banco: "conectado",
+        dados: rows
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        banco: "erro",
+        mensagem: error.message
+      });
+    }
   }
-});
+);
 
-// Consulta continua disponível para o Dashboard da Produção.
+/* =========================
+   OCORRÊNCIAS
+========================= */
+
+/*
+  Continua público porque
+  a Produção usa o Dashboard.
+*/
 router.get(
   "/occurrences",
   listarOcorrencias
 );
 
-// Detalhes exigem login.
 router.get(
   "/occurrences/:protocolo",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade", "Engenharia", "Expedição"),
+  permitirPerfis(
+    "Administrador",
+    "Qualidade",
+    "Engenharia",
+    "Expedição"
+  ),
   buscarOcorrencia
 );
 
-// Somente Qualidade cria ocorrência.
+/*
+  Qualidade ou Administrador
+*/
 router.post(
   "/occurrences",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade"),
+  permitirPerfis(
+    "Administrador",
+    "Qualidade"
+  ),
   criarOcorrencia
 );
 
-// Somente Qualidade pode editar os dados gerais.
 router.put(
   "/occurrences/:protocolo",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade"),
+  permitirPerfis(
+    "Administrador",
+    "Qualidade"
+  ),
   atualizarOcorrencia
 );
 
-router.patch(
-  "/occurrences/:protocolo/costs",
-  exigirAutenticacao,
-  exigirSenhaAtualizada,
-  permitirPerfis("Expedição"),
-  atualizarCustos
-);
-
-// Somente Qualidade exclui.
 router.delete(
   "/occurrences/:protocolo",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade"),
+  permitirPerfis(
+    "Administrador",
+    "Qualidade"
+  ),
   excluirOcorrencia
 );
 
-// Somente Engenharia pode definir o método.
+/*
+  Custos:
+  Expedição ou Administrador
+*/
+router.patch(
+  "/occurrences/:protocolo/costs",
+  exigirAutenticacao,
+  exigirSenhaAtualizada,
+  permitirPerfis(
+    "Administrador",
+    "Expedição"
+  ),
+  atualizarCustos
+);
+
+/*
+  Método:
+  Engenharia ou Administrador
+*/
 router.post(
   "/occurrences/:protocolo/method",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Engenharia"),
+  permitirPerfis(
+    "Administrador",
+    "Engenharia"
+  ),
   uploadMetodo,
   salvarMetodo
 );
@@ -124,16 +302,25 @@ router.delete(
   "/occurrences/:protocolo/method/file",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Engenharia"),
+  permitirPerfis(
+    "Administrador",
+    "Engenharia"
+  ),
   removerArquivoMetodo
 );
 
-// Bipagem é da Qualidade.
+/*
+  Bipagem:
+  Qualidade ou Administrador
+*/
 router.post(
   "/occurrences/:protocolo/scans",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade"),
+  permitirPerfis(
+    "Administrador",
+    "Qualidade"
+  ),
   registrarSerial
 );
 
@@ -141,24 +328,11 @@ router.delete(
   "/occurrences/:protocolo/scans/:serial",
   exigirAutenticacao,
   exigirSenhaAtualizada,
-  permitirPerfis("Qualidade"),
+  permitirPerfis(
+    "Administrador",
+    "Qualidade"
+  ),
   excluirSerial
-);
-
-router.get(
-  "/users",
-  exigirAutenticacao,
-  exigirSenhaAtualizada,
-  permitirPerfis("Qualidade"),
-  listarUsuarios
-);
-
-router.post(
-  "/users",
-  exigirAutenticacao,
-  exigirSenhaAtualizada,
-  permitirPerfis("Qualidade"),
-  criarUsuario
 );
 
 module.exports = router;

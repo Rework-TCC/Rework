@@ -38,7 +38,7 @@ async function login(req, res) {
 
     const usuario = usuarios[0];
 
-    const perfisComLogin = ["Qualidade", "Engenharia", "Expedição"];
+    const perfisComLogin = ["Administrador", "Qualidade", "Engenharia", "Expedição"];
 
     if (!perfisComLogin.includes(usuario.perfil)) {
       return res.status(403).json({

@@ -135,7 +135,8 @@ function initContextHelp() {
     "metodo-retrabalho.html": "Descreva a sequência de inspeção e retrabalho. O anexo é opcional e deve ter até 2 MB. Salvar libera a bipagem para a Qualidade. Remover um anexo é uma ação imediata, com confirmação.",
     "seriais.html": "Confira o método e a faixa antes de bipar. Enter registra OK; o botão NG registra um defeito. Seriais repetidos não são aceitos. Para corrigir uma leitura, exclua o registro com confirmação e bipe novamente.",
     "relatorios.html": "O período considera a data da ocorrência. Datas vazias não limitam o período. Gere novamente após mudar filtros; então exporte CSV ou use a impressão do navegador para salvar PDF.",
-    "usuarios.html": "Os cartões descrevem as permissões fixas de cada perfil. Adicionar usuário simula a inclusão na lista desta página; não cria uma conta nem muda o perfil conectado.",
+    "usuarios.html": "Esta área é exclusiva do Administrador. Consulte os usuários autorizados, altere perfis e ative ou inative acessos.",
+    "solicitacoes.html": "Esta área é exclusiva do Administrador. Analise as solicitações pendentes e aprove ou rejeite os pedidos de acesso.",
   };
   if (!topics[page] || !document.querySelector(".page-top")) return;
   const help = document.createElement("details");
@@ -953,39 +954,247 @@ async function validarSessaoDaPagina() {
 
 // Monta o menu conforme as permissões do perfil ativo.
 function renderShell() {
-  const sidebar = document.querySelector("#sidebar");
+  const sidebar =
+    document.querySelector(
+      "#sidebar"
+    );
+
   if (!sidebar) return;
-  const active = sidebar.dataset.active;
-  const profile = sessionStorage.getItem("rework-profile") || "Produção";
-  const userName = sessionStorage.getItem("rework-user-name");
+
+  const active =
+    sidebar.dataset.active;
+
+  const profile =
+    sessionStorage.getItem(
+      "rework-profile"
+    ) || "Produção";
+
+  const userName =
+    sessionStorage.getItem(
+      "rework-user-name"
+    );
+
   const operational =
     profile === "Produção"
-      ? [["dashboard", "Dashboard", "dashboard.html", "dashboard"]]
+      ? [
+          [
+            "dashboard",
+            "Dashboard",
+            "dashboard.html",
+            "dashboard"
+          ]
+        ]
       : [
-          ["dashboard", "Dashboard", "dashboard.html", "dashboard"],
-          ["occurrences", "Ocorrências", "ocorrencias.html", "occurrences"],
+          [
+            "dashboard",
+            "Dashboard",
+            "dashboard.html",
+            "dashboard"
+          ],
+          [
+            "occurrences",
+            "Ocorrências",
+            "ocorrencias.html",
+            "occurrences"
+          ]
         ];
-  if (profile === "Qualidade")
+
+  if (
+    profile === "Qualidade" ||
+    profile === "Administrador"
+  ) {
     operational.push([
       "new",
       "Criar ocorrência",
       "nova-ocorrencia.html",
-      "new",
+      "new"
     ]);
-  sidebar.className = "sidebar";
+  }
+
+  const management = [];
+
+  if (profile === "Qualidade") {
+    management.push([
+      "reports",
+      "Relatórios",
+      "relatorios.html",
+      "reports"
+    ]);
+  }
+
+  if (profile === "Administrador") {
+
+    management.push(
+      [
+        "reports",
+        "Relatórios",
+        "relatorios.html",
+        "reports"
+      ],
+      [
+        "users",
+        "Usuários e perfis",
+        "usuarios.html",
+        "users"
+      ],
+      [
+        "requests",
+        "Solicitações de acesso",
+        "solicitacoes.html",
+        "users"
+      ]
+    );
+  }
+
+  sidebar.className =
+    "sidebar";
+
   sidebar.innerHTML = `
-    <div class="sidebar-head"><div class="brand-mark"><img src="assets/rework-symbol.svg" alt="" width="36" height="36"><strong>REWORK</strong></div><button id="toggleSidebar" class="sidebar-toggle" type="button" aria-label="Recolher menu" title="Recolher menu">‹</button></div>
-    <div class="nav-group"><small>Operação</small><nav>
-      ${operational.map((item) => `<a class="${active === item[0] ? "active" : ""}" href="${item[2]}" title="${item[1]}"><span class="nav-icon">${NAV_ICONS[item[3]]}</span><span class="nav-label">${item[1]}</span></a>`).join("")}
-    </nav></div>
-    ${profile === "Qualidade" ? `<div class="nav-group"><small>Gestão</small><nav><a class="${active === "reports" ? "active" : ""}" href="relatorios.html" title="Relatórios"><span class="nav-icon">${NAV_ICONS.reports}</span><span class="nav-label">Relatórios</span></a><a class="${active === "users" ? "active" : ""}" href="usuarios.html" title="Usuários e perfis"><span class="nav-icon">${NAV_ICONS.users}</span><span class="nav-label">Usuários e perfis</span></a></nav></div>` : ""}
-    <div class="sidebar-profile"><strong>${profile === "Produção" ? "Produção" : esc(userName || "Usuário")}</strong><small>${profile === "Produção" ? "Acesso público" : `Perfil ${esc(profile)}`}</small><button class="link-button" data-logout>Sair</button></div>`;
+    <div class="sidebar-head">
+
+      <div class="brand-mark">
+
+        <img
+          src="assets/rework-symbol.svg"
+          alt=""
+          width="36"
+          height="36"
+        >
+
+        <strong>
+          REWORK
+        </strong>
+
+      </div>
+
+      <button
+        id="toggleSidebar"
+        class="sidebar-toggle"
+        type="button"
+      >
+        ‹
+      </button>
+
+    </div>
+
+    <div class="nav-group">
+
+      <small>
+        Operação
+      </small>
+
+      <nav>
+
+        ${operational
+          .map(
+            (item) => `
+              <a
+                class="${
+                  active === item[0]
+                    ? "active"
+                    : ""
+                }"
+                href="${item[2]}"
+                title="${item[1]}"
+              >
+
+                <span class="nav-icon">
+                  ${NAV_ICONS[item[3]]}
+                </span>
+
+                <span class="nav-label">
+                  ${item[1]}
+                </span>
+
+              </a>
+            `
+          )
+          .join("")}
+
+      </nav>
+
+    </div>
+
+    ${
+      management.length
+        ? `
+        <div class="nav-group">
+
+          <small>
+            Gestão
+          </small>
+
+          <nav>
+
+            ${management
+              .map(
+                (item) => `
+                <a
+                  class="${
+                    active === item[0]
+                      ? "active"
+                      : ""
+                  }"
+                  href="${item[2]}"
+                  title="${item[1]}"
+                >
+
+                  <span class="nav-icon">
+                    ${NAV_ICONS[item[3]]}
+                  </span>
+
+                  <span class="nav-label">
+                    ${item[1]}
+                  </span>
+
+                </a>
+              `
+              )
+              .join("")}
+
+          </nav>
+
+        </div>
+        `
+        : ""
+    }
+
+    <div class="sidebar-profile">
+
+      <strong>
+        ${
+          profile === "Produção"
+            ? "Produção"
+            : esc(
+                userName ||
+                "Usuário"
+              )
+        }
+      </strong>
+
+      <small>
+        ${
+          profile === "Produção"
+            ? "Acesso público"
+            : `Perfil ${esc(profile)}`
+        }
+      </small>
+
+      <button
+        class="link-button"
+        data-logout
+      >
+        Sair
+      </button>
+
+    </div>
+  `;
 }
 
 function bindGlobal() {
   const profile = sessionStorage.getItem("rework-profile") || "Produção";
   document.querySelectorAll(".quality-only").forEach((element) => {
-    element.hidden = profile !== "Qualidade";
+    element.hidden = !["Qualidade", "Administrador"].includes(profile);
   });
   document.querySelectorAll(".occurrence-access").forEach((element) => {
     element.hidden = profile === "Produção";
@@ -1057,20 +1266,125 @@ function statusBadge(occurrence) {
   return `<span class="badge ${style}">${esc(label)}</span>`;
 }
 
-function occurrenceActions(occurrence, profile) {
-  const en = preferenceLanguage() === "en";
-  const context = `<span class="sr-only"> ${esc(occurrence.id)}</span>`;
-  const methodLink = `<a href="metodo-retrabalho.html${params(occurrence.id)}" data-select="${occurrence.id}">${occurrence.method ? "Método / arquivo" : "Definir método"}${context}</a>`;
-  if (profile === "Expedição")
-    return `<button class="table-link" type="button" data-edit="${occurrence.id}">${en ? "Edit costs" : "Editar custos"}${context}</button>`;
-  if (profile === "Engenharia")
+function occurrenceActions(
+  occurrence,
+  profile
+) {
+  const en =
+    preferenceLanguage() === "en";
+
+  const context =
+    `<span class="sr-only">
+      ${esc(occurrence.id)}
+    </span>`;
+
+  const methodLink = `
+    <a
+      href="metodo-retrabalho.html${params(
+        occurrence.id
+      )}"
+      data-select="${occurrence.id}"
+    >
+      ${
+        occurrence.method
+          ? "Método / arquivo"
+          : "Definir método"
+      }
+      ${context}
+    </a>
+  `;
+
+  if (profile === "Expedição") {
+    return `
+      <button
+        class="table-link"
+        type="button"
+        data-edit="${occurrence.id}"
+      >
+        ${
+          en
+            ? "Edit costs"
+            : "Editar custos"
+        }
+        ${context}
+      </button>
+    `;
+  }
+
+  if (profile === "Engenharia") {
     return methodLink;
-  const actions = occurrence.method
-    ? `<a href="seriais.html${params(occurrence.id)}" data-select="${occurrence.id}">Bipar${context}</a>`
-    : "";
-  return (profile === "Qualidade" ? `<a href="detalhes-ocorrencia.html${params(occurrence.id)}">Ver detalhes${context}</a>` : "") + actions + (profile === "Qualidade"
-    ? `<button class="danger compact-action" type="button" data-delete-occurrence="${esc(occurrence.id)}" aria-label="${en ? "Delete occurrence" : "Excluir ocorrência"} ${esc(occurrence.id)}">${en ? "Delete" : "Excluir"}</button>`
-    : "");
+  }
+
+  const scanLink =
+    occurrence.method
+      ? `
+        <a
+          href="seriais.html${params(
+            occurrence.id
+          )}"
+          data-select="${occurrence.id}"
+        >
+          Bipar
+          ${context}
+        </a>
+      `
+      : "";
+
+  if (profile === "Administrador") {
+
+    return `
+      <a
+        href="detalhes-ocorrencia.html${params(
+          occurrence.id
+        )}"
+      >
+        Ver detalhes
+        ${context}
+      </a>
+
+      ${methodLink}
+
+      ${scanLink}
+
+      <button
+        class="danger compact-action"
+        type="button"
+        data-delete-occurrence="${esc(
+          occurrence.id
+        )}"
+      >
+        Excluir
+      </button>
+    `;
+  }
+
+  if (profile === "Qualidade") {
+
+    return `
+      <a
+        href="detalhes-ocorrencia.html${params(
+          occurrence.id
+        )}"
+      >
+        Ver detalhes
+        ${context}
+      </a>
+
+      ${scanLink}
+
+      <button
+        class="danger compact-action"
+        type="button"
+        data-delete-occurrence="${esc(
+          occurrence.id
+        )}"
+      >
+        Excluir
+      </button>
+    `;
+  }
+
+  return "";
 }
 
 // Confere o perfil novamente antes de excluir os dados locais.
@@ -1102,7 +1416,7 @@ function occurrenceRows(list) {
       (occurrence) => `
     <tr>
       <td>${
-        profile === "Qualidade" || profile === "Expedição"
+        ["Qualidade", "Expedição", "Administrador"].includes(profile)
           ? `<button class="folder-button" type="button" data-edit="${occurrence.id}" aria-label="Editar ${occurrence.id}" title="Editar ${occurrence.id}">
         <span aria-hidden="true">✎</span><small>${occurrence.id}</small><small>${profile === "Expedição" ? "Editar custos" : "Editar"}</small>
       </button>`
@@ -1198,6 +1512,7 @@ async function initOccurrences() {
   const dialog = document.querySelector("#editOccurrence");
   const form = document.querySelector("#editOccurrenceForm");
   const profile = sessionStorage.getItem("rework-profile") || "Produção";
+  const canEditGeneral = ["Qualidade", "Administrador"].includes(profile);
   let editingId = null;
 
   const openEditor = (id) => {
@@ -1301,7 +1616,7 @@ async function initOccurrences() {
     const serialEnd = values.get("serialEnd")?.trim();
     const editStatus = document.querySelector("#editFormStatus");
     if (
-      profile === "Qualidade" &&
+      canEditGeneral &&
       serialStart.localeCompare(serialEnd, undefined, {
         numeric: true,
         sensitivity: "base",
@@ -1310,7 +1625,7 @@ async function initOccurrences() {
       fieldError(form.elements.serialEnd, "O serial final deve ser igual ou posterior ao serial inicial. Revise a faixa antes de salvar.", editStatus);
       return;
     }
-    if (profile === "Qualidade") {
+    if (canEditGeneral) {
       const changes = [];
       if (values.get("status") !== original.status) changes.push(`Status: ${original.status} → ${values.get("status")}`);
       if (Number(values.get("blocked")) !== original.blocked) changes.push(`Quantidade bloqueada: ${original.blocked} → ${values.get("blocked")}. Containers e bipagens existentes não serão alterados.`);
@@ -1514,8 +1829,12 @@ async function initMethod() {
   const fileInput = document.querySelector("#methodFile");
   const attachment = document.querySelector("#methodAttachment");
   const submit = form.querySelector('[type="submit"]');
-  const engineering = sessionStorage.getItem("rework-profile") === "Engenharia";
-  submit.textContent = engineering ? "Salvar método" : "Salvar e iniciar bipagem";
+  const methodEditor = ["Engenharia", "Administrador"].includes(sessionStorage.getItem("rework-profile"));
+  if (!methodEditor) {
+    location.replace("ocorrencias.html");
+    return;
+  }
+  submit.textContent = "Salvar método";
   let saving = false;
   const renderAttachment = () => {
     attachment.innerHTML = occurrence.methodFile
@@ -1578,15 +1897,10 @@ async function initMethod() {
 
       feedback(`Método da ocorrência ${occurrence.id} salvo com sucesso.`, false, status);
 
-      const engineering = sessionStorage.getItem("rework-profile") === "Engenharia";
       setTimeout(() => {
         navigateWithFeedback(
-          engineering
-            ? "ocorrencias.html"
-            : `seriais.html${params(occurrence.id)}`,
-          engineering
-            ? `Método de ${occurrence.id} salvo.`
-            : `Método de ${occurrence.id} salvo. Inicie a bipagem.`
+          "ocorrencias.html",
+          `Método de ${occurrence.id} salvo.`
         );
       }, 500);
     } catch (error) {
@@ -1754,118 +2068,805 @@ async function initDetail() {
 
 // Cadastro de usuários pela API e credenciais de primeiro acesso.
 async function initUsers() {
-  const dialog = document.querySelector("#userDialog");
-  if (!dialog) return;
-  const form = document.querySelector("#userForm");
-  const rows = document.querySelector("#userRows");
-  const carregarUsuarios = async () => {
-    try {
-      const usuarios = await apiRequest("/api/users");
-      rows.innerHTML = usuarios.map((usuario) => {
-        const statusUsuario = !usuario.ativo
-          ? `<span class="badge pending">Inativo</span>`
-          : usuario.troca_senha_obrigatoria
-            ? `<span class="badge pending">Primeiro acesso pendente</span>`
-            : `<span class="badge defined">Ativo</span>`;
-        return `
-        <tr>
-          <td>
-            <strong>${esc(usuario.nome)}</strong>
-            <small class="cell-detail">${esc(usuario.email)}</small>
-          </td>
-          <td>${esc(usuario.area)}</td>
-          <td>${esc(usuario.perfil)}</td>
-          <td>
-            ${statusUsuario}
-          </td>
-        </tr>
-      `;
-      }).join("");
-      if (!usuarios.length) {
+  const rows =
+    document.querySelector(
+      "#userRows"
+    );
+
+  if (!rows) return;
+
+  let currentUserId = null;
+
+  const carregarUsuarios =
+    async () => {
+
+      try {
+
+        const me =
+          await apiRequest(
+            "/api/auth/me"
+          );
+
+        currentUserId =
+          me.usuario.id_usuario;
+
+        const usuarios =
+          await apiRequest(
+            "/api/users"
+          );
+
+        rows.innerHTML =
+          usuarios
+            .map((usuario) => {
+
+              const admin = usuario.perfil === "Administrador" ||
+                Number(usuario.id_usuario) === Number(currentUserId);
+
+              const status =
+                usuario.ativo
+                  ? `<span class="badge defined">Ativo</span>`
+                  : `<span class="badge pending">Inativo</span>`;
+
+              const profiles =
+                [
+                  "Qualidade",
+                  "Engenharia",
+                  "Expedição"
+                ];
+
+              const profileControl =
+                admin
+                  ? `
+                    <strong>
+                      Administrador
+                    </strong>
+                  `
+                  : `
+                    <select
+                      data-user-profile="${usuario.id_usuario}"
+                      class="user-profile-select"
+                      aria-label="Perfil de ${esc(usuario.nome)}"
+                    >
+
+                      ${profiles
+                        .map(
+                          (profile) => `
+                          <option
+                            value="${profile}"
+                            ${
+                              usuario.perfil ===
+                              profile
+                                ? "selected"
+                                : ""
+                            }
+                          >
+                            ${profile}
+                          </option>
+                        `
+                        )
+                        .join("")}
+
+                    </select>
+                  `;
+
+              const actions =
+                admin
+                  ? `
+                    <span class="muted">
+                      Conta administrativa
+                    </span>
+                  `
+                  : `
+                    <button
+                      class="secondary"
+                      type="button"
+                      data-user-status="${usuario.id_usuario}"
+                      data-active="${Boolean(usuario.ativo)}"
+                    >
+                      ${
+                        usuario.ativo
+                          ? "Inativar"
+                          : "Reativar"
+                      }
+                    </button>
+                  `;
+
+              return `
+                <tr>
+
+                  <td>
+                    <strong>
+                      ${esc(usuario.nome)}
+                    </strong>
+
+                    <small class="cell-detail">
+                      ${esc(usuario.email)}
+                    </small>
+                  </td>
+
+                  <td>
+                    ${esc(usuario.area)}
+                  </td>
+
+                  <td>
+                    ${profileControl}
+                  </td>
+
+                  <td>
+                    ${status}
+                  </td>
+
+                  <td>
+                    ${actions}
+                  </td>
+
+                </tr>
+              `;
+            })
+            .join("");
+
+        if (!usuarios.length) {
+          rows.innerHTML = '<tr><td colspan="5" class="empty">Nenhum usuário cadastrado.</td></tr>';
+        }
+
+        rows
+          .querySelectorAll(
+            "[data-user-profile]"
+          )
+          .forEach((select) => {
+
+            select.onchange =
+              async () => {
+
+                const id =
+                  select.dataset
+                    .userProfile;
+
+                try {
+                  select.disabled = true;
+
+                  await apiRequest(
+                    `/api/users/${id}/profile`,
+                    {
+                      method: "PATCH",
+
+                      headers: {
+                        "Content-Type":
+                          "application/json"
+                      },
+
+                      body:
+                        JSON.stringify({
+                          perfil:
+                            select.value
+                        })
+                    }
+                  );
+
+                  feedback(
+                    "Perfil atualizado com sucesso."
+                  );
+
+                  await carregarUsuarios();
+
+                } catch (error) {
+
+                  feedback(
+                    error.message,
+                    true
+                  );
+
+                  await carregarUsuarios();
+                } finally {
+                  select.disabled = false;
+                }
+              };
+          });
+
+        rows
+          .querySelectorAll(
+            "[data-user-status]"
+          )
+          .forEach((button) => {
+
+            button.onclick =
+              async () => {
+
+                const id =
+                  button.dataset
+                    .userStatus;
+
+                const active =
+                  button.dataset
+                    .active === "true";
+
+                const action =
+                  active
+                    ? "inativar"
+                    : "reativar";
+
+                if (
+                  !window.confirm(
+                    `Deseja ${action} este usuário?`
+                  )
+                ) {
+                  return;
+                }
+
+                try {
+                  button.disabled = true;
+
+                  await apiRequest(
+                    `/api/users/${id}/status`,
+                    {
+                      method: "PATCH",
+
+                      headers: {
+                        "Content-Type":
+                          "application/json"
+                      },
+
+                      body:
+                        JSON.stringify({
+                          ativo:
+                            !active
+                        })
+                    }
+                  );
+
+                  feedback(
+                    `Usuário ${
+                      active
+                        ? "inativado"
+                        : "reativado"
+                    } com sucesso.`
+                  );
+
+                  await carregarUsuarios();
+
+                } catch (error) {
+
+                  feedback(
+                    error.message,
+                    true
+                  );
+                } finally {
+                  button.disabled = false;
+                }
+              };
+          });
+
+      } catch (error) {
+
         rows.innerHTML = `
           <tr>
-            <td colspan="4" class="empty">Nenhum usuário cadastrado.</td>
+            <td
+              colspan="5"
+              class="empty"
+            >
+              Não foi possível carregar
+              os usuários.
+            </td>
           </tr>
         `;
+
+        feedback(
+          error.message,
+          true
+        );
       }
-    } catch (error) {
-      console.error("Erro ao carregar usuários:", error);
-      feedback(`Não foi possível carregar os usuários: ${error.message}`, true);
-    }
-  };
+    };
+
   await carregarUsuarios();
-  const passwordDialog = document.querySelector("#temporaryPasswordDialog");
-  const createdUserName = document.querySelector("#createdUserName");
-  const createdUserEmail = document.querySelector("#createdUserEmail");
-  const temporaryPassword = document.querySelector("#temporaryPassword");
-  const copyPassword = document.querySelector("#copyTemporaryPassword");
-  const finishCreation = document.querySelector("#finishUserCreation");
-  const closeTemporary = document.querySelector("#closeTemporaryPassword");
-  document.querySelector("#addUser").onclick = () => { form.reset(); markClean(form); dialog.showModal(); };
-  document
-    .querySelectorAll("[data-close-user]")
-    .forEach((button) => (button.onclick = () => closeEditor(dialog, form)));
-  dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeEditor(dialog, form); });
-  form.onsubmit = async (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) return;
-    const values = new FormData(form);
-    try {
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: values.get("name"),
-          email: values.get("email"),
-          area: values.get("area"),
-          perfil: values.get("profile")
-        })
-      });
-      const resultado = await response.json();
-      if (!response.ok) {
-        throw new Error(resultado.mensagem || "Não foi possível criar o usuário.");
-      }
-      await carregarUsuarios();
-      markClean(form);
-      dialog.close();
-      form.reset();
-      createdUserName.textContent = resultado.usuario.nome;
-      createdUserEmail.textContent = resultado.usuario.email;
-      temporaryPassword.textContent = resultado.senha_temporaria;
-      passwordDialog.showModal();
-    } catch (error) {
-      console.error(error);
-      feedback(error.message, true);
-    }
-  };
-
-  copyPassword?.addEventListener("click", async () => {
-    const password = temporaryPassword.textContent.trim();
-    try {
-      await navigator.clipboard.writeText(password);
-      copyPassword.textContent = "Senha copiada";
-      setTimeout(() => { copyPassword.textContent = "Copiar senha"; }, 2000);
-    } catch {
-      feedback("Não foi possível copiar automaticamente. Selecione a senha e copie manualmente.", true);
-    }
-  });
-
-  const fecharSenhaTemporaria = () => {
-    temporaryPassword.textContent = "-";
-    createdUserName.textContent = "-";
-    createdUserEmail.textContent = "-";
-    copyPassword.textContent = "Copiar senha";
-    passwordDialog.close();
-  };
-  finishCreation?.addEventListener("click", fecharSenhaTemporaria);
-  closeTemporary?.addEventListener("click", fecharSenhaTemporaria);
-  passwordDialog.addEventListener("cancel", (event) => {
-    event.preventDefault();
-    fecharSenhaTemporaria();
-  });
 }
 
-// Gera, imprime e exporta relatórios a partir das ocorrências salvas.
+async function initAccessRequestsAdmin() {
+  const rows =
+    document.querySelector(
+      "#requestRows"
+    );
+
+  if (!rows) return;
+
+  const count =
+    document.querySelector(
+      "#pendingRequestCount"
+    );
+
+  const dialog =
+    document.querySelector(
+      "#approveRequestDialog"
+    );
+
+  const form =
+    document.querySelector(
+      "#approveRequestForm"
+    );
+
+  const name =
+    document.querySelector(
+      "#approveRequestName"
+    );
+
+  const requestedProfile =
+    document.querySelector(
+      "#approveRequestedProfile"
+    );
+
+  const approvedProfile =
+    document.querySelector(
+      "#approvedProfile"
+    );
+
+  const status =
+    document.querySelector(
+      "#approveRequestStatus"
+    );
+
+  let currentRequestId = null;
+
+  const carregar =
+    async () => {
+
+      try {
+
+        const solicitacoes =
+          await apiRequest(
+            "/api/access-requests"
+          );
+
+        const pending =
+          solicitacoes.filter(
+            (item) =>
+              item.status ===
+              "Pendente"
+          );
+
+        count.textContent =
+          `${pending.length} pendente${
+            pending.length === 1
+              ? ""
+              : "s"
+          }`;
+
+        rows.innerHTML =
+          solicitacoes
+            .map((item) => {
+
+              const badge =
+                item.status === "Aprovado"
+                  ? "defined"
+                  : item.status ===
+                    "Rejeitado"
+                    ? "ng"
+                    : "pending";
+
+              const actions =
+                item.status ===
+                "Pendente"
+                  ? `
+                    <div class="table-actions">
+
+                      <button
+                        class="primary"
+                        type="button"
+                        data-approve-request="${item.id_solicitacao}"
+                      >
+                        Aprovar
+                      </button>
+
+                      <button
+                        class="danger"
+                        type="button"
+                        data-reject-request="${item.id_solicitacao}"
+                      >
+                        Rejeitar
+                      </button>
+
+                    </div>
+                  `
+                  : `
+                    <span class="muted">
+                      ${
+                        item.administrador
+                          ? `Analisado por ${esc(
+                              item.administrador
+                            )}`
+                          : "Analisado"
+                      }
+                    </span>
+                  `;
+
+              return `
+                <tr>
+
+                  <td>
+                    <strong>
+                      ${esc(item.nome)}
+                    </strong>
+
+                    <small class="cell-detail">
+                      ${esc(item.email)}
+                    </small>
+                  </td>
+
+                  <td>
+                    ${esc(item.area)}
+                  </td>
+
+                  <td>
+                    ${esc(
+                      item.perfil_solicitado
+                    )}
+                  </td>
+
+                  <td>
+                    ${
+                      new Date(
+                        item.criado_em
+                      ).toLocaleString(
+                        "pt-BR"
+                      )
+                    }
+                  </td>
+
+                  <td>
+                    <span
+                      class="badge ${badge}"
+                    >
+                      ${esc(item.status)}
+                    </span>
+                  </td>
+
+                  <td>
+                    ${actions}
+                  </td>
+
+                </tr>
+              `;
+            })
+            .join("") ||
+          `
+            <tr>
+              <td
+                colspan="6"
+                class="empty"
+              >
+                Nenhuma solicitação encontrada.
+              </td>
+            </tr>
+          `;
+
+        rows
+          .querySelectorAll(
+            "[data-approve-request]"
+          )
+          .forEach((button) => {
+
+            button.onclick =
+              () => {
+
+                const item =
+                  solicitacoes.find(
+                    (request) =>
+                      String(
+                        request.id_solicitacao
+                      ) ===
+                      button.dataset
+                        .approveRequest
+                  );
+
+                if (!item) return;
+
+                currentRequestId =
+                  item.id_solicitacao;
+
+                name.textContent =
+                  item.nome;
+
+                requestedProfile
+                  .textContent =
+                  item.perfil_solicitado;
+
+                approvedProfile.value =
+                  item.perfil_solicitado;
+
+                status.textContent =
+                  "";
+
+                dialog.showModal();
+              };
+          });
+
+        rows
+          .querySelectorAll(
+            "[data-reject-request]"
+          )
+          .forEach((button) => {
+
+            button.onclick =
+              async () => {
+
+                if (
+                  !window.confirm(
+                    "Deseja rejeitar esta solicitação?"
+                  )
+                ) {
+                  return;
+                }
+
+                try {
+
+                  await apiRequest(
+                    `/api/access-requests/${button.dataset.rejectRequest}/reject`,
+                    {
+                      method: "POST",
+
+                      headers: {
+                        "Content-Type":
+                          "application/json"
+                      },
+
+                      body:
+                        JSON.stringify({})
+                    }
+                  );
+
+                  feedback(
+                    "Solicitação rejeitada."
+                  );
+
+                  await carregar();
+
+                } catch (error) {
+
+                  feedback(
+                    error.message,
+                    true
+                  );
+                }
+              };
+          });
+
+      } catch (error) {
+
+        feedback(
+          error.message,
+          true
+        );
+      }
+    };
+
+  document
+    .querySelectorAll(
+      "[data-close-approve]"
+    )
+    .forEach((button) => {
+
+      button.onclick =
+        () => dialog.close();
+
+    });
+
+  form.onsubmit =
+    async (event) => {
+
+      event.preventDefault();
+
+      if (!currentRequestId) {
+        return;
+      }
+
+      const submit =
+        form.querySelector(
+          '[type="submit"]'
+        );
+
+      submit.disabled = true;
+
+      try {
+
+        await apiRequest(
+          `/api/access-requests/${currentRequestId}/approve`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                perfil:
+                  approvedProfile.value
+              })
+          }
+        );
+
+        dialog.close();
+
+        feedback(
+          "Acesso aprovado. O usuário já pode entrar com a senha cadastrada."
+        );
+
+        currentRequestId = null;
+
+        await carregar();
+
+      } catch (error) {
+
+        status.className =
+          "status-message error";
+
+        status.textContent =
+          error.message;
+
+      } finally {
+
+        submit.disabled = false;
+      }
+    };
+
+  await carregar();
+}
+
+async function initAdminAccessNotifications() {
+  const profile =
+    sessionStorage.getItem(
+      "rework-profile"
+    );
+
+  if (profile !== "Administrador") {
+    return;
+  }
+
+  const page =
+    location.pathname
+      .split("/")
+      .pop();
+
+  if (page === "solicitacoes.html") {
+    return;
+  }
+
+  try {
+
+    const pendentes =
+      await apiRequest(
+        "/api/access-requests/pending"
+      );
+
+    if (!pendentes.length) {
+      sessionStorage.removeItem(
+        "rework-admin-pending-notified"
+      );
+
+      return;
+    }
+
+    const signature =
+      pendentes
+        .map(
+          (item) =>
+            item.id_solicitacao
+        )
+        .join(",");
+
+    if (
+      sessionStorage.getItem(
+        "rework-admin-pending-notified"
+      ) === signature
+    ) {
+      return;
+    }
+
+    const dialog =
+      document.createElement(
+        "dialog"
+      );
+
+    dialog.className =
+      "edit-dialog";
+    dialog.setAttribute("aria-labelledby", "adminPendingRequestsTitle");
+
+    dialog.innerHTML = `
+      <div class="dialog-header">
+
+        <div>
+
+          <p class="kicker">
+            Gestão de acessos
+          </p>
+
+          <h2 id="adminPendingRequestsTitle">
+            Novas solicitações
+          </h2>
+
+        </div>
+
+      </div>
+
+      <p>
+        Existem
+        <strong>
+          ${pendentes.length}
+        </strong>
+        ${
+          pendentes.length === 1
+            ? "solicitação"
+            : "solicitações"
+        }
+        aguardando sua análise.
+      </p>
+
+      <div class="actions">
+
+        <button
+          id="laterAccessRequests"
+          class="secondary"
+          type="button"
+        >
+          Agora não
+        </button>
+
+        <button
+          id="viewAccessRequests"
+          class="primary"
+          type="button"
+        >
+          Ver solicitações
+        </button>
+
+      </div>
+    `;
+
+    document.body.append(dialog);
+
+    const remember = () => {
+      sessionStorage.setItem(
+        "rework-admin-pending-notified",
+        signature
+      );
+    };
+
+    dialog.addEventListener("cancel", () => remember());
+    dialog.addEventListener("close", () => dialog.remove());
+
+    dialog
+      .querySelector(
+        "#laterAccessRequests"
+      )
+      .onclick = () => {
+
+        remember();
+
+        dialog.close();
+        dialog.remove();
+      };
+
+    dialog
+      .querySelector(
+        "#viewAccessRequests"
+      )
+      .onclick = () => {
+
+        remember();
+
+        location.href =
+          "solicitacoes.html";
+      };
+
+    dialog.showModal();
+
+  } catch (error) {
+    console.error(
+      "Erro ao consultar solicitações:",
+      error
+    );
+  }
+}
+
 async function initReports() {
   const output = document.querySelector("#reportOutput");
   if (!output) return;
@@ -2188,59 +3189,315 @@ function initNew() {
   };
 }
 
+function initAccessRequest() {
+  const form =
+    document.querySelector(
+      "#requestAccessForm"
+    );
+
+  if (!form) return false;
+
+  const password =
+    document.querySelector(
+      "#requestPassword"
+    );
+
+  const confirmPassword =
+    document.querySelector(
+      "#requestPasswordConfirm"
+    );
+
+  const status =
+    document.querySelector(
+      "#requestAccessStatus"
+    );
+
+  const toggle =
+    document.querySelector(
+      "#requestTogglePassword"
+    );
+
+  const submit =
+    form.querySelector(
+      '[type="submit"]'
+    );
+
+  toggle?.addEventListener(
+    "click",
+    () => {
+      const show =
+        password.type ===
+        "password";
+
+      password.type =
+        show
+          ? "text"
+          : "password";
+
+      confirmPassword.type =
+        show
+          ? "text"
+          : "password";
+
+      toggle.textContent =
+        show
+          ? "Ocultar senhas"
+          : "Mostrar senhas";
+    }
+  );
+
+  form.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      if (
+        password.value !==
+        confirmPassword.value
+      ) {
+        status.className =
+          "status-message error";
+
+        status.textContent =
+          "As senhas não coincidem.";
+
+        return;
+      }
+
+      submit.disabled = true;
+
+      status.className =
+        "status-message";
+
+      status.textContent =
+        "Enviando solicitação…";
+
+      const values =
+        new FormData(form);
+
+      try {
+
+        const resultado =
+          await apiRequest(
+            "/api/access-requests",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                nome:
+                  values.get("name"),
+
+                email:
+                  values.get("email"),
+
+                area:
+                  values.get("area"),
+
+                perfil:
+                  values.get("profile"),
+
+                senha:
+                  values.get("password"),
+
+                confirmar_senha:
+                  values.get(
+                    "passwordConfirm"
+                  )
+              })
+            }
+          );
+
+        status.className =
+          "status-message success";
+
+        status.textContent =
+          resultado.mensagem;
+
+        form.reset();
+
+        setTimeout(() => {
+          location.href =
+            "index.html";
+        }, 1800);
+
+      } catch (error) {
+
+        status.className =
+          "status-message error";
+
+        status.textContent =
+          error.message;
+
+      } finally {
+        submit.disabled = false;
+      }
+    }
+  );
+
+  return true;
+}
+
 // Inicializa somente os recursos existentes na página aberta.
-document.addEventListener("DOMContentLoaded", async () => {
-  initPreferences();
-  if (initLogin()) {
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    initPreferences();
+
+    if (initLogin()) {
+      translatePage();
+      return;
+    }
+
+    const page =
+      location.pathname
+        .split("/")
+        .pop();
+
+    /*
+      Solicitação é pública.
+    */
+    if (
+      page ===
+      "solicitar-acesso.html"
+    ) {
+      initAccessRequest();
+      translatePage();
+      return;
+    }
+
+    if (
+      page ===
+      "alterar-senha.html"
+    ) {
+      initChangePassword();
+      translatePage();
+      return;
+    }
+
+    const usuario =
+      await validarSessaoDaPagina();
+
+    if (!usuario) {
+      return;
+    }
+
+    const activeProfile =
+      usuario.perfil;
+
+    if (
+      activeProfile === "Produção" &&
+      page !== "dashboard.html"
+    ) {
+      location.replace(
+        "dashboard.html"
+      );
+
+      return;
+    }
+
+    /*
+      Método:
+      somente Engenharia/Admin.
+    */
+    if (
+      page ===
+        "metodo-retrabalho.html" &&
+      ![
+        "Engenharia",
+        "Administrador"
+      ].includes(activeProfile)
+    ) {
+      location.replace(
+        "ocorrencias.html"
+      );
+
+      return;
+    }
+
+    const allowedPages = {
+
+      Qualidade: [
+        "dashboard.html",
+        "ocorrencias.html",
+        "nova-ocorrencia.html",
+        "detalhes-ocorrencia.html",
+        "containers.html",
+        "seriais.html",
+        "relatorios.html"
+      ],
+
+      Engenharia: [
+        "dashboard.html",
+        "ocorrencias.html",
+        "metodo-retrabalho.html"
+      ],
+
+      Expedição: [
+        "dashboard.html",
+        "ocorrencias.html"
+      ],
+
+      Administrador: [
+        "dashboard.html",
+        "ocorrencias.html",
+        "nova-ocorrencia.html",
+        "detalhes-ocorrencia.html",
+        "containers.html",
+        "metodo-retrabalho.html",
+        "seriais.html",
+        "relatorios.html",
+        "usuarios.html",
+        "solicitacoes.html"
+      ]
+    };
+
+    if (
+      allowedPages[activeProfile] &&
+      !allowedPages[
+        activeProfile
+      ].includes(page)
+    ) {
+      location.replace(
+        "dashboard.html"
+      );
+
+      return;
+    }
+
+    renderShell();
+    bindGlobal();
+
+    /*
+      Aviso de solicitações
+      para o Administrador.
+    */
+    initAdminAccessNotifications();
+
+    initDashboard();
+    initOccurrences();
+    initNew();
+    initDetail();
+    initMethod();
+    initScans();
+    initContainers();
+
+    initUsers();
+    initAccessRequestsAdmin();
+
+    initReports();
+    initContextHelp();
+    initFormGuidance();
+
     translatePage();
-    return;
   }
-  const page = location.pathname.split("/").pop();
-  if (page === "alterar-senha.html") {
-    initChangePassword();
-    translatePage();
-    return;
-  }
-  const usuario = await validarSessaoDaPagina();
-  if (!usuario) {
-    return;
-  }
-  const activeProfile = usuario.perfil;
-  if (activeProfile === "Produção" && page !== "dashboard.html") {
-    location.replace("dashboard.html");
-    return;
-  }
-  if (page === "metodo-retrabalho.html" && activeProfile !== "Engenharia") {
-    location.replace("ocorrencias.html");
-    return;
-  }
-  const allowedPages = {
-    Engenharia: [
-      "dashboard.html",
-      "ocorrencias.html",
-      "metodo-retrabalho.html",
-    ],
-    Expedição: ["dashboard.html", "ocorrencias.html"],
-  };
-  if (
-    allowedPages[activeProfile] &&
-    !allowedPages[activeProfile].includes(page)
-  ) {
-    location.replace("dashboard.html");
-    return;
-  }
-  renderShell();
-  bindGlobal();
-  initDashboard();
-  initOccurrences();
-  initNew();
-  initDetail();
-  initMethod();
-  initScans();
-  initContainers();
-  initUsers();
-  initReports();
-  initContextHelp();
-  initFormGuidance();
-  translatePage();
-});
+);

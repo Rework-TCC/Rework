@@ -32,6 +32,52 @@ CREATE TABLE usuario (
         REFERENCES perfil(id_perfil)
 );
 
+CREATE TABLE solicitacao_acesso (
+    id_solicitacao INT AUTO_INCREMENT PRIMARY KEY,
+
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    area VARCHAR(100) NOT NULL,
+
+    senha_hash VARCHAR(255) NULL,
+
+    status ENUM(
+        'Pendente',
+        'Aprovado',
+        'Rejeitado'
+    ) NOT NULL DEFAULT 'Pendente',
+
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    analisado_em DATETIME NULL,
+
+    id_perfil_solicitado INT NOT NULL,
+    id_perfil_aprovado INT NULL,
+    id_admin_analisou INT NULL,
+
+    observacao_admin VARCHAR(500) NULL,
+
+    CONSTRAINT fk_solicitacao_perfil_solicitado
+        FOREIGN KEY (id_perfil_solicitado)
+        REFERENCES perfil(id_perfil),
+
+    CONSTRAINT fk_solicitacao_perfil_aprovado
+        FOREIGN KEY (id_perfil_aprovado)
+        REFERENCES perfil(id_perfil),
+
+    CONSTRAINT fk_solicitacao_admin
+        FOREIGN KEY (id_admin_analisou)
+        REFERENCES usuario(id_usuario)
+        ON DELETE SET NULL
+);
+
+INSERT IGNORE INTO perfil (nome)
+VALUES
+('Qualidade'),
+('Engenharia'),
+('Produção'),
+('Expedição'),
+('Administrador');
+
 CREATE TABLE linha_producao (
     id_linha INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,

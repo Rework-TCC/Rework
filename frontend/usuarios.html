@@ -10,198 +10,193 @@
   <body class="app-body">
     <a class="skip-link" href="#main">Ir para o conteúdo</a>
     <aside id="sidebar" data-active="users"></aside>
-    <main id="main" class="app-main" tabindex="-1">
-      <header class="page-top">
-        <div>
-          <p class="kicker">Acesso e responsabilidade</p>
-          <h1>Usuários e perfis</h1>
-          <p>
-            Gerencie os usuários autorizados a acessar o Rework e seus respectivos
-            perfis de acesso.
-          </p>
-          <p class="notice">
-            Novos usuários receberão uma senha temporária gerada pelo sistema.
-            Essa senha deverá ser alterada obrigatoriamente no primeiro acesso.
-          </p>
-        </div>
-        <button id="addUser" class="primary" type="button">
-          Adicionar usuário
-        </button>
-      </header>
-      <!-- Permissões e usuários organizados por perfil. -->
-      <section class="content-grid profile-grid">
-        <article class="panel span-3 profile-card">
-          <span class="profile-dot quality"></span>
-          <h2>Qualidade</h2>
-          <p>
-            Acesso total: cria, edita e exclui ocorrências, gerencia usuários, define
-            status e realiza bipagem.
-          </p>
-          <span class="badge defined">Administrador</span>
-        </article>
-        <article class="panel span-3 profile-card">
-          <span class="profile-dot engineering"></span>
-          <h2>Engenharia</h2>
-          <p>
-            Visualiza ocorrências pendentes e adiciona ou atualiza o método de
-            retrabalho.
-          </p>
-          <span class="badge started">Editor técnico</span>
-        </article>
-        <article class="panel span-3 profile-card">
-          <span class="profile-dot production"></span>
-          <h2>Produção</h2>
-          <p>
-            Acesso somente ao Dashboard para consultar resultados, quantidades,
-            status e progresso.
-          </p>
-          <span class="badge pending">Somente leitura</span>
-        </article>
-        <article class="panel span-3 profile-card">
-          <span class="profile-dot shipping"></span>
-          <h2>Expedição</h2>
-          <p>
-            Visualiza as ocorrências e informa os custos por hora de containers
-            e atraso de venda.
-          </p>
-          <span class="badge started">Editor de custos</span>
-        </article>
-        <article class="panel span-12">
-          <div class="section-heading"><h2>Usuários cadastrados</h2></div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Usuário</th>
-                  <th scope="col">Área</th>
-                  <th scope="col">Perfil</th>
-                  <th scope="col">Situação</th>
-                </tr>
-              </thead>
-              <tbody id="userRows">
-                <tr>
-                  <td>Marina Qualidade</td>
-                  <td>Qualidade</td>
-                  <td>Qualidade</td>
-                  <td><span class="badge defined">Ativo</span></td>
-                </tr>
-                <tr>
-                  <td>Eduardo Engenharia</td>
-                  <td>Engenharia</td>
-                  <td>Engenharia</td>
-                  <td><span class="badge defined">Ativo</span></td>
-                </tr>
-                <tr>
-                  <td>Paulo Produção</td>
-                  <td>Produção</td>
-                  <td>Produção</td>
-                  <td><span class="badge defined">Ativo</span></td>
-                </tr>
-                <tr>
-                  <td>Renata Expedição</td>
-                  <td>Expedição</td>
-                  <td>Expedição</td>
-                  <td><span class="badge defined">Ativo</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-      <dialog id="userDialog" class="edit-dialog" aria-labelledby="userDialogTitle">
-        <form id="userForm">
-          <header class="dialog-header">
-            <div>
-              <p class="kicker">Gestão de acessos</p>
-              <h2 id="userDialogTitle">Cadastrar novo usuário</h2>
-            </div>
-            <button
-              class="icon-button"
-              type="button"
-              data-close-user
-              aria-label="Fechar"
-            >
-              &times;
-            </button>
-          </header>
-          <p class="muted">
-            Informe os dados do funcionário e defina o perfil de acesso.
-            Campos com * são obrigatórios.
-          </p>
-          <div class="form-grid">
-            <div class="field full">
-              <label for="userName">Nome completo <span aria-hidden="true">*</span></label>
-              <input id="userName" name="name" type="text" autocomplete="name" placeholder="Ex.: Maria da Silva" required />
-            </div>
-            <div class="field full">
-              <label for="userEmail">E-mail corporativo <span aria-hidden="true">*</span></label>
-              <input id="userEmail" name="email" type="email" autocomplete="email" placeholder="Ex.: maria.silva@empresa.com" required />
-            </div>
-            <div class="field">
-              <label for="userArea">Área <span aria-hidden="true">*</span></label>
-              <input id="userArea" name="area" type="text" placeholder="Ex.: Qualidade" required />
-            </div>
-            <div class="field">
-              <label for="userProfile">Perfil de acesso <span aria-hidden="true">*</span></label>
-              <select id="userProfile" name="profile" required>
-                <option value="">Selecione um perfil</option>
-                <option value="Qualidade">Qualidade</option>
-                <option value="Engenharia">Engenharia</option>
-                <option value="Produção">Produção</option>
-                <option value="Expedição">Expedição</option>
-              </select>
-            </div>
-          </div>
-          <div class="notice">
-            <strong>Primeiro acesso</strong>
-            <p>
-              O sistema gerará uma senha temporária após a criação do usuário.
-              Essa senha será exibida apenas uma vez e deverá ser alterada pelo
-              funcionário no primeiro acesso ao Rework.
-            </p>
-          </div>
-          <div class="actions">
-            <button class="secondary" type="button" data-close-user>
-              Cancelar</button
-            ><button class="primary" type="submit">Criar usuário</button>
-          </div>
-        </form>
-      </dialog>
-      <dialog id="temporaryPasswordDialog" class="edit-dialog" aria-labelledby="temporaryPasswordTitle">
-        <div class="dialog-header">
-          <div>
-            <p class="kicker">Usuário criado</p>
-            <h2 id="temporaryPasswordTitle">Credenciais de primeiro acesso</h2>
-          </div>
-          <button id="closeTemporaryPassword" class="icon-button" type="button" aria-label="Fechar">&times;</button>
-        </div>
-        <div class="temporary-access">
-          <p>O usuário foi criado com sucesso.</p>
-          <p class="notice">
-            A senha abaixo será exibida somente neste momento.
-            Oriente o funcionário a alterá-la no primeiro acesso.
-          </p>
-          <div class="field">
-            <label>Usuário</label>
-            <strong id="createdUserName">-</strong>
-          </div>
-          <div class="field">
-            <label>E-mail</label>
-            <strong id="createdUserEmail">-</strong>
-          </div>
-          <div class="field">
-            <label>Senha temporária</label>
-            <div class="temporary-password-box">
-              <code id="temporaryPassword">-</code>
-              <button id="copyTemporaryPassword" class="secondary" type="button">Copiar senha</button>
-            </div>
-          </div>
-          <div class="actions">
-            <button id="finishUserCreation" class="primary" type="button">Concluir</button>
-          </div>
-        </div>
-      </dialog>
-    </main>
+    <main
+  id="main"
+  class="app-main"
+  tabindex="-1"
+>
+
+  <header class="page-top">
+
+    <div>
+
+      <p class="kicker">
+        Administração
+      </p>
+
+      <h1>
+        Usuários e perfis
+      </h1>
+
+      <p>
+        Gerencie usuários autorizados,
+        seus perfis e situação de acesso.
+      </p>
+
+    </div>
+
+  </header>
+
+  <section
+    class="content-grid profile-grid"
+  >
+
+    <article
+      class="panel span-4 profile-card"
+    >
+      <span
+        class="profile-dot admin"
+      ></span>
+
+      <h2>Administrador</h2>
+
+      <p>
+        Gerencia usuários,
+        solicitações e permissões
+        e possui acesso administrativo
+        às funcionalidades do sistema.
+      </p>
+
+      <span class="badge defined">
+        Administração
+      </span>
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot quality"
+      ></span>
+
+      <h2>Qualidade</h2>
+
+      <p>
+        Cria e acompanha ocorrências,
+        realiza bipagens e consulta
+        os relatórios.
+      </p>
+
+      <span class="badge defined">
+        Operacional
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot engineering"
+      ></span>
+
+      <h2>Engenharia</h2>
+
+      <p>
+        Define e atualiza o método
+        de retrabalho.
+      </p>
+
+      <span class="badge started">
+        Editor técnico
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot shipping"
+      ></span>
+
+      <h2>Expedição</h2>
+
+      <p>
+        Informa os custos relacionados
+        aos containers e atraso de venda.
+      </p>
+
+      <span class="badge started">
+        Editor de custos
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot production"
+      ></span>
+
+      <h2>Produção</h2>
+
+      <p>
+        Consulta somente o Dashboard.
+        Não possui conta autenticada.
+      </p>
+
+      <span class="badge pending">
+        Acesso público
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-12"
+    >
+
+      <div class="section-heading">
+
+        <h2>
+          Usuários cadastrados
+        </h2>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Usuário</th>
+              <th>Área</th>
+              <th>Perfil</th>
+              <th>Situação</th>
+              <th>Ações</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="userRows">
+
+            <tr>
+              <td
+                colspan="5"
+                class="empty"
+              >
+                Carregando...
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+  </section>
+
+</main>
     <script src="app.js"></script>
   </body>
 </html>
