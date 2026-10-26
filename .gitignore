@@ -23,3 +23,7 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Arquivos enviados pelos usuários
+backend/uploads/methods/*
+!backend/uploads/methods/.gitkeep
+
