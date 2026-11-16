@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>
+    Rework | Solicitações de acesso
+  </title>
+
+  <link
+    rel="icon"
+    href="assets/rework-symbol.svg"
+    type="image/svg+xml"
+  >
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+</head>
+
+<body class="app-body">
+
+  <aside
+    id="sidebar"
+    data-active="requests"
+  ></aside>
+
+  <main
+    id="main"
+    class="app-main"
+  >
+
+    <header class="page-top">
+
+      <div>
+
+        <p class="kicker">
+          Administração
+        </p>
+
+        <h1>
+          Solicitações de acesso
+        </h1>
+
+        <p>
+          Analise os pedidos de acesso
+          enviados pelos usuários.
+        </p>
+
+      </div>
+
+    </header>
+
+    <section class="panel">
+
+      <div class="section-heading">
+
+        <h2>
+          Solicitações
+        </h2>
+
+        <span
+          id="pendingRequestCount"
+          class="badge pending"
+        >
+          0 pendentes
+        </span>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Usuário</th>
+              <th>Área</th>
+              <th>Perfil solicitado</th>
+              <th>Data</th>
+              <th>Situação</th>
+              <th>Ações</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="requestRows">
+
+            <tr>
+              <td
+                colspan="6"
+                class="empty"
+              >
+                Carregando...
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+    <dialog
+      id="approveRequestDialog"
+      class="edit-dialog"
+    >
+
+      <form id="approveRequestForm">
+
+        <header class="dialog-header">
+
+          <div>
+            <p class="kicker">
+              Gestão de acessos
+            </p>
+
+            <h2>
+              Aprovar solicitação
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            class="icon-button"
+            data-close-approve
+          >
+            &times;
+          </button>
+
+        </header>
+
+        <p>
+          Usuário:
+          <strong
+            id="approveRequestName"
+          ></strong>
+        </p>
+
+        <p>
+          Perfil solicitado:
+          <strong
+            id="approveRequestedProfile"
+          ></strong>
+        </p>
+
+        <div class="field">
+
+          <label for="approvedProfile">
+            Perfil que será concedido
+          </label>
+
+          <select
+            id="approvedProfile"
+            required
+          >
+            <option value="Qualidade">
+              Qualidade
+            </option>
+
+            <option value="Engenharia">
+              Engenharia
+            </option>
+
+            <option value="Expedição">
+              Expedição
+            </option>
+          </select>
+
+        </div>
+
+        <div
+          id="approveRequestStatus"
+          class="status-message"
+        ></div>
+
+        <div class="actions">
+
+          <button
+            class="secondary"
+            type="button"
+            data-close-approve
+          >
+            Cancelar
+          </button>
+
+          <button
+            class="primary"
+            type="submit"
+          >
+            Aprovar acesso
+          </button>
+
+        </div>
+
+      </form>
+
+    </dialog>
+
+  </main>
+
+  <script src="app.js"></script>
+
+</body>
+</html>

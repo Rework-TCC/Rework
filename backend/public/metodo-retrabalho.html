@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rework | Método de retrabalho</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="occurrences"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top">
+        <div>
+          <p class="kicker">Bloqueio <span id="methodId"></span></p>
+          <h1>Método de retrabalho</h1>
+          <p>Definição técnica da ocorrência selecionada.</p>
+        </div>
+        <a class="secondary" href="ocorrencias.html">Voltar às ocorrências</a>
+      </header>
+      <!-- Definição técnica e arquivo exclusivo desta ocorrência. -->
+      <section class="content-grid">
+        <aside class="panel span-4">
+          <h2>Ocorrência</h2>
+          <p id="methodSummary"></p>
+          <div class="notice">
+            Ao salvar, a Qualidade poderá bipar os seriais. O método orienta como inspecionar e retrabalhar cada aparelho.
+          </div>
+        </aside>
+        <form id="methodForm" class="panel span-8">
+          <h2>Definição do fluxo</h2>
+          <p class="muted">Campos com * são obrigatórios. Descreva a sequência de trabalho e o critério para classificar o aparelho.</p>
+          <div class="method-fields">
+            <div class="field">
+              <label for="cause">Possível causa</label
+              ><input id="cause" name="cause" />
+            </div>
+            <div class="field">
+              <label for="classification">Categoria *</label
+              ><input id="classification" name="classification" required />
+            </div>
+            <div class="field">
+              <label for="department">Departamento responsável *</label
+              ><input id="department" name="department" required />
+            </div>
+            <div class="field">
+              <label for="method">Método de retrabalho *</label
+              ><textarea id="method" name="method" rows="4" required></textarea>
+            </div>
+            <div class="field">
+              <label for="person">Pessoa responsável *</label
+              ><input id="person" name="person" required />
+            </div>
+            <div class="field attachment-field">
+              <label for="methodFile">Arquivo do método de retrabalho</label>
+              <input
+                id="methodFile"
+                name="methodFile"
+                type="file"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+              />
+              <small>PDF, Word, Excel ou imagem com até 2 MB.</small>
+              <div
+                id="methodFileStatus"
+                class="status-message error"
+                role="alert"
+              ></div>
+            </div>
+            <div id="methodAttachment" class="attachment-list"></div>
+          </div>
+          <div class="actions">
+            <a class="secondary" href="ocorrencias.html">Cancelar</a
+            ><button class="primary" type="submit">
+              Salvar e iniciar bipagem
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

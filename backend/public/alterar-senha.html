@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>
+    Rework | Alterar senha
+  </title>
+
+  <link
+    rel="icon"
+    href="assets/rework-symbol.svg"
+    type="image/svg+xml"
+  >
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="login.css"
+  >
+</head>
+
+<body class="login-page">
+
+  <main class="login-shell">
+
+    <section class="login-story">
+
+      <div class="login-brand">
+
+        <img
+          src="assets/rework-symbol.svg"
+          class="brand-symbol"
+          alt=""
+        >
+
+        <div>
+          <span class="brand-wordmark">
+            REWORK
+          </span>
+
+          <p class="brand-tagline">
+            CONTROLE · RASTREABILIDADE · RESULTADOS
+          </p>
+        </div>
+
+      </div>
+
+      <div class="story-copy">
+
+        <h1>
+          Primeiro<br>
+          acesso ao<br>
+          <span>Rework.</span>
+        </h1>
+
+        <p class="hero-description">
+          Por segurança, substitua a senha
+          temporária antes de acessar o sistema.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <section
+      class="login-card"
+      aria-labelledby="change-password-title"
+    >
+
+      <header class="login-card-head">
+
+        <img
+          src="assets/rework-symbol.svg"
+          class="card-symbol"
+          alt=""
+        >
+
+        <h2 id="change-password-title">
+          Cadastre sua nova senha
+        </h2>
+
+        <p>
+          Olá,
+          <strong id="changePasswordUser">
+            usuário
+          </strong>.
+        </p>
+
+      </header>
+
+
+      <form
+        id="changePasswordForm"
+        class="login-form"
+      >
+
+        <div class="field">
+
+          <label for="newPassword">
+            Nova senha
+          </label>
+
+          <div class="login-input">
+
+            <input
+              id="newPassword"
+              name="newPassword"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+              placeholder="Mínimo de 8 caracteres"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="confirmPassword">
+            Confirmar nova senha
+          </label>
+
+          <div class="login-input">
+
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+              placeholder="Digite novamente"
+            >
+
+          </div>
+
+        </div>
+
+
+        <button
+          class="primary wide login-submit"
+          type="submit"
+        >
+          Salvar nova senha
+        </button>
+
+
+        <div
+          id="changePasswordStatus"
+          class="status-message"
+          role="alert"
+        ></div>
+
+      </form>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>

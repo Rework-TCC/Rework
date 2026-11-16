@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Rework | Detalhes</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="occurrences"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top">
+        <div>
+          <p id="pageId" class="kicker"></p>
+          <h1 id="pageTitle"></h1>
+          <p id="pageSubtitle"></p>
+        </div>
+        <a class="secondary" href="ocorrencias.html">Voltar à lista</a>
+      </header>
+      <!-- Atalhos para os dados relacionados ao bloqueio. -->
+      <nav
+        class="quick-links quick-links-three"
+        aria-label="Seções do bloqueio"
+      >
+        <a data-context-link="detalhes-ocorrencia.html">Resumo</a>
+        <a data-context-link="containers.html">Containers</a>
+        <a data-context-link="metodo-retrabalho.html">Método</a>
+      </nav>
+      <!-- Resumo preenchido conforme a ocorrência selecionada. -->
+      <section id="detailContent" class="content-grid"></section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

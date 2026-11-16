@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Rework | Criar ocorrência</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="new"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top">
+        <div>
+          <p class="kicker">Novo bloqueio</p>
+          <h1>Criar ocorrência</h1>
+          <p>Preencha em duas etapas curtas. Campos com * são obrigatórios.</p>
+        </div>
+      </header>
+      <div class="stepper" aria-label="Etapas">
+        <span id="stepMark1" class="step active" aria-current="step"><b>1</b>Bloqueio</span
+        ><i class="step-line"></i
+        ><span id="stepMark2" class="step"><b>2</b>Containers</span>
+      </div>
+      <!-- Cadastro dividido entre dados do bloqueio e fluxo de execução. -->
+      <form id="newOccurrence" novalidate>
+        <section id="step1" class="panel">
+          <h2 id="step1Title" tabindex="-1">Dados do bloqueio</h2>
+          <p>Informe o produto, o defeito e a faixa de seriais. Na próxima etapa, distribua a quantidade bloqueada entre os containers.</p>
+          <div class="form-grid three">
+            <div class="field">
+              <label for="line">Linha *</label
+              ><input id="line" name="line" placeholder="Ex.: VM02" required />
+            </div>
+            <div class="field">
+              <label for="part">Parte / processo *</label
+              ><input
+                id="part"
+                name="part"
+                placeholder="Ex.: Inspeção final"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="defect">Defeito *</label
+              ><input id="defect" name="defect" required />
+            </div>
+            <div class="field full">
+              <label for="description">Descrição *</label
+              ><textarea
+                id="description"
+                name="description"
+                required
+              ></textarea>
+            </div>
+            <div class="field">
+              <label for="serialStart">Serial inicial *</label
+              ><input id="serialStart" name="serialStart" required /><small
+                >Define o início da faixa aceita na bipagem.</small
+              >
+            </div>
+            <div class="field">
+              <label for="serialEnd">Serial final *</label
+              ><input id="serialEnd" name="serialEnd" required /><small
+                >Define o fim da faixa aceita na bipagem.</small
+              >
+            </div>
+            <div class="field">
+              <label for="blocked">Quantidade bloqueada *</label
+              ><input
+                id="blocked"
+                name="blocked"
+                type="number"
+                min="1"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="model">Modelo *</label
+              ><input id="model" name="model" required />
+            </div>
+            <div class="field">
+              <label for="area">Área solicitante *</label
+              ><input id="area" name="area" required />
+            </div>
+            <div class="field">
+              <label for="detected">Quantidade detectada *</label
+              ><input
+                id="detected"
+                name="detected"
+                type="number"
+                min="1"
+                required
+              />
+            </div>
+          </div>
+          <div id="step1Status" class="status-message error" role="alert"></div>
+          <div class="actions">
+            <a class="secondary" href="ocorrencias.html">Cancelar</a
+            ><button id="nextStep" class="primary" type="button">
+              Continuar
+            </button>
+          </div>
+        </section>
+        <section id="step2" class="panel" hidden>
+          <h2 id="step2Title" tabindex="-1">Containers</h2>
+          <p>
+            Distribua a quantidade bloqueada entre os containers.
+            O método de retrabalho será definido posteriormente pela Engenharia.
+          </p>
+          <h3 class="section-spacing">Containers e quantidades</h3>
+          <p class="muted">A soma deve ser igual à quantidade bloqueada.</p>
+          <p id="containerTotals" class="notice" role="status" aria-live="polite"></p>
+          <div id="containerRows"></div>
+          <button
+            id="addContainer"
+            class="secondary compact-spacing"
+            type="button"
+          >
+            Adicionar container
+          </button>
+          <div
+            id="newStatus"
+            class="status-message error status-spacing"
+            role="alert"
+            aria-live="assertive"
+          ></div>
+          <div class="actions">
+            <button id="backStep" class="secondary" type="button">Voltar</button
+            ><button class="primary" type="submit">Criar ocorrência</button>
+          </div>
+        </section>
+      </form>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
