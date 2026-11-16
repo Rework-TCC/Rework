@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Rework | Containers</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="containers"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top">
+        <div>
+          <p class="kicker">Bloqueio <span id="containerId"></span></p>
+          <h1>Containers</h1>
+          <p>Volumes físicos vinculados somente a esta ocorrência.</p>
+        </div>
+        <a class="secondary" data-context-link="detalhes-ocorrencia.html"
+          >Voltar ao bloqueio</a
+        >
+      </header>
+      <!-- Resumo e containers da ocorrência selecionada. -->
+      <section id="containerContent" class="content-grid"></section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

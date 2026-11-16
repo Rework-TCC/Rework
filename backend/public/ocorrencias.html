@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rework | Ocorrências</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="occurrences"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top">
+        <div>
+          <p class="kicker">Histórico de bloqueios</p>
+          <h1>Ocorrências</h1>
+          <p>Consulte, edite e acesse a bipagem de cada bloqueio.</p>
+        </div>
+        <a class="primary quality-only" href="nova-ocorrencia.html"
+          >Criar ocorrência</a
+        >
+      </header>
+      <!-- Filtros e listagem compacta das ocorrências. -->
+      <section class="panel">
+        <div class="filter-grid">
+          <div class="field filter-search">
+            <label for="search">Buscar ocorrência ou defeito</label>
+            <input
+              id="search"
+              type="search"
+              placeholder="Modelo, linha, problema ou defeito"
+            />
+          </div>
+          <div class="field">
+            <label for="dateFilter">Data</label>
+            <input id="dateFilter" type="date" />
+          </div>
+          <div class="field">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter">
+              <option>Todos</option>
+              <option>Iniciado</option>
+              <option>Pendente</option>
+              <option>Finalizado</option>
+            </select>
+          </div>
+          <button
+            id="clearFilters"
+            class="secondary filter-clear"
+            type="button"
+          >
+            Limpar filtros
+          </button>
+        </div>
+        <p id="filterResult" class="filter-result" aria-live="polite"></p>
+        <div class="table-wrap occurrence-table-wrap">
+          <table class="occurrence-table">
+            <thead>
+              <tr>
+                <th scope="col"><span class="sr-only">Editar</span></th>
+                <th scope="col">Produto / linha</th>
+                <th scope="col">Data</th>
+                <th scope="col">Problema</th>
+                <th scope="col">Responsável</th>
+                <th scope="col">Quantidades</th>
+                <th scope="col">Status</th>
+                <th scope="col">Custo / prioridade</th>
+                <th scope="col">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="occurrenceRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <!-- Janela de edição aberta pelo ícone de pasta. -->
+    <dialog id="editOccurrence" class="edit-dialog" aria-labelledby="editOccurrenceTitle">
+      <form id="editOccurrenceForm">
+        <header class="dialog-header">
+          <div>
+            <p class="kicker">Editar bloqueio</p>
+            <h2 id="editOccurrenceTitle">Ocorrência</h2>
+          </div>
+          <button
+            class="icon-button"
+            type="button"
+            data-close-dialog
+            aria-label="Fechar"
+          >
+            &times;
+          </button>
+        </header>
+        <p id="editPermissionNote" class="notice" hidden></p>
+        <p class="muted">Campos com * são obrigatórios. Custos são opcionais. Alterações de status, data, faixa ou quantidade serão apresentadas para confirmação.</p>
+        <div class="form-grid">
+          <div class="field">
+            <label for="editModel">Modelo <span aria-hidden="true">*</span></label
+            ><input id="editModel" name="model" required />
+          </div>
+          <div class="field">
+            <label for="editLine">Linha <span aria-hidden="true">*</span></label
+            ><input id="editLine" name="line" required />
+          </div>
+          <div class="field">
+            <label for="editDate">Data <span aria-hidden="true">*</span></label
+            ><input id="editDate" name="date" type="date" required />
+          </div>
+          <div class="field">
+            <label for="editBlocked">Quantidade bloqueada <span aria-hidden="true">*</span></label
+            ><input
+              id="editBlocked"
+              name="blocked"
+              type="number"
+              min="1"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="editSerialStart">Serial inicial <span aria-hidden="true">*</span></label>
+            <input id="editSerialStart" name="serialStart" required />
+          </div>
+          <div class="field">
+            <label for="editSerialEnd">Serial final <span aria-hidden="true">*</span></label>
+            <input id="editSerialEnd" name="serialEnd" required />
+          </div>
+          <div class="field full">
+            <label for="editDefect">Problema / defeito <span aria-hidden="true">*</span></label
+            ><input id="editDefect" name="defect" required />
+          </div>
+          <div class="field full">
+            <label for="editDescription">Descrição <span aria-hidden="true">*</span></label
+            ><textarea
+              id="editDescription"
+              name="description"
+              required
+            ></textarea>
+          </div>
+          <div class="field">
+            <label for="editPerson">Pessoa responsável <span aria-hidden="true">*</span></label
+            ><input id="editPerson" name="person" required />
+          </div>
+          <div class="field">
+            <label for="editStatus">Status</label
+            ><select id="editStatus" name="status">
+              <option>Pendente</option>
+              <option>Iniciado</option>
+              <option>Finalizado</option>
+            </select>
+          </div>
+          <div class="field cost-field">
+            <label for="editContainerCost"
+              >Aluguel dos containers por hora (R$)</label
+            >
+            <input
+              id="editContainerCost"
+              name="containerHourlyCost"
+              type="number"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <div class="field cost-field">
+            <label for="editSalesCost">Atraso da venda por hora (R$)</label>
+            <input
+              id="editSalesCost"
+              name="salesDelayHourlyCost"
+              type="number"
+              min="0"
+              step="0.01"
+            />
+          </div>
+        </div>
+        <div class="actions">
+          <span
+            id="editFormStatus"
+            class="status-message error"
+            role="alert"
+          ></span>
+          <button class="secondary" type="button" data-close-dialog>
+            Cancelar
+          </button>
+          <button class="primary" type="submit">Salvar alterações</button>
+        </div>
+      </form>
+    </dialog>
+    <script src="app.js"></script>
+  </body>
+</html>

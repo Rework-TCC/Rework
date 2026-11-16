@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>
+    Rework | Solicitar acesso
+  </title>
+
+  <link
+    rel="icon"
+    href="assets/rework-symbol.svg"
+    type="image/svg+xml"
+  >
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="login.css"
+  >
+</head>
+
+<body class="login-page">
+
+  <main
+    class="login-shell access-request-shell"
+  >
+
+    <section
+      class="login-card"
+      aria-labelledby="request-title"
+    >
+
+      <header class="login-card-head">
+
+        <img
+          src="assets/rework-symbol.svg"
+          class="card-symbol"
+          alt=""
+        >
+
+        <h1 id="request-title">
+          Solicitar acesso
+        </h1>
+
+        <p>
+          Preencha seus dados.
+          O acesso será liberado somente
+          após aprovação do administrador.
+        </p>
+
+      </header>
+
+      <form
+        id="requestAccessForm"
+        class="login-form"
+        novalidate
+      >
+
+        <div class="field">
+          <label for="requestName">
+            Nome completo *
+          </label>
+
+          <input
+            id="requestName"
+            name="name"
+            type="text"
+            autocomplete="name"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="requestEmail">
+            E-mail *
+          </label>
+
+          <input
+            id="requestEmail"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="requestArea">
+            Área *
+          </label>
+
+          <input
+            id="requestArea"
+            name="area"
+            type="text"
+            placeholder="Ex.: Engenharia"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="requestProfile">
+            Perfil solicitado *
+          </label>
+
+          <select
+            id="requestProfile"
+            name="profile"
+            required
+          >
+            <option value="">
+              Selecione
+            </option>
+
+            <option value="Qualidade">
+              Qualidade
+            </option>
+
+            <option value="Engenharia">
+              Engenharia
+            </option>
+
+            <option value="Expedição">
+              Expedição
+            </option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="requestPassword">
+            Senha *
+          </label>
+
+          <input
+            id="requestPassword"
+            name="password"
+            type="password"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="requestPasswordConfirm">
+            Confirmar senha *
+          </label>
+
+          <input
+            id="requestPasswordConfirm"
+            name="passwordConfirm"
+            type="password"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          >
+        </div>
+
+        <button
+          id="requestTogglePassword"
+          class="text-button"
+          type="button"
+        >
+          Mostrar senhas
+        </button>
+
+        <p class="notice">
+          Solicitar um perfil não concede
+          automaticamente a permissão.
+          O administrador analisará o pedido.
+        </p>
+
+        <button
+          class="primary wide"
+          type="submit"
+        >
+          Enviar solicitação
+        </button>
+
+        <div
+          id="requestAccessStatus"
+          class="status-message"
+          role="alert"
+        ></div>
+
+        <a
+          class="secondary wide"
+          href="index.html"
+        >
+          Voltar ao login
+        </a>
+
+      </form>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

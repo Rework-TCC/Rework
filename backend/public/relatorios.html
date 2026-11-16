@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rework | Relatórios</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="reports"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top no-print">
+        <div>
+          <p class="kicker">Gestão</p>
+          <h1>Relatório de ocorrências</h1>
+          <p>Consolide volumes, andamento, custos e prioridades do período.</p>
+        </div>
+      </header>
+
+      <!-- Parâmetros usados para montar o relatório. -->
+      <section class="panel report-filters no-print">
+        <p>Escolha os filtros e clique em Gerar relatório. A exportação e a impressão usam o resultado gerado.</p>
+        <div class="report-filter-grid">
+          <div class="field">
+            <label for="reportStart">Data inicial</label
+            ><input id="reportStart" type="date" />
+          </div>
+          <div class="field">
+            <label for="reportEnd">Data final</label
+            ><input id="reportEnd" type="date" />
+          </div>
+          <div class="field">
+            <label for="reportStatus">Status</label
+            ><select id="reportStatus">
+              <option>Todos</option>
+              <option>Iniciado</option>
+              <option>Pendente</option>
+              <option>Finalizado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reportLine">Linha</label
+            ><select id="reportLine">
+              <option value="">Todas</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="clearReport" class="secondary" type="button">
+            Limpar
+          </button>
+          <button id="generateReport" class="primary" type="button">
+            Gerar relatório
+          </button>
+        </div>
+      </section>
+
+      <p id="reportFeedback" class="status-message no-print" role="status" aria-live="polite"></p>
+      <!-- Resultado pronto para impressão ou exportação. -->
+      <section id="reportOutput" class="report-output">
+        <div class="report-title">
+          <div>
+            <p class="kicker">REWORK</p>
+            <h2>Relatório de ocorrências</h2>
+            <p id="reportPeriod" class="muted"></p>
+          </div>
+          <span id="reportGeneratedAt" class="page-stamp"></span>
+        </div>
+        <div id="reportMetrics" class="dashboard-grid report-metrics"></div>
+        <section class="panel report-table-panel">
+          <div class="section-heading">
+            <h2>Ocorrências incluídas</h2>
+            <span id="reportCount" class="page-stamp"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Data</th>
+                  <th scope="col">Linha</th>
+                  <th scope="col">Modelo</th>
+                  <th scope="col">Problema</th>
+                  <th scope="col">Bloqueada</th>
+                  <th scope="col">Pendente</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Custo</th>
+                  <th scope="col">Prioridade</th>
+                </tr>
+              </thead>
+              <tbody id="reportRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <div class="actions no-print">
+        <button id="exportReport" class="secondary" type="button">
+          Exportar CSV
+        </button>
+        <button id="printReport" class="primary" type="button">
+          Imprimir / salvar PDF
+        </button>
+      </div>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

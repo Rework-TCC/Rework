@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Rework | Bipagem</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="scans"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top">
+        <div>
+          <p class="kicker">Bloqueio <span id="scanId"></span></p>
+          <h1>Bipagem de seriais</h1>
+          <p id="scanRange"></p>
+        </div>
+        <a class="secondary" data-context-link="detalhes-ocorrencia.html"
+          >Voltar ao bloqueio</a
+        >
+      </header>
+      <!-- Bloqueia a bipagem enquanto o método não estiver definido. -->
+      <div id="scanGate" class="flow-gate" hidden>
+        <span>O método deste bloqueio ainda não foi definido.</span
+        ><a class="primary" data-context-link="metodo-retrabalho.html"
+          >Definir método</a
+        >
+      </div>
+      <!-- Entrada do serial, resumo e registros da inspeção. -->
+      <section class="content-grid">
+        <form id="scanForm" class="panel span-8">
+          <h2>Classificar aparelho</h2>
+          <div class="field scan-box">
+            <label for="serialScan">Número de série</label
+            ><input
+              id="serialScan"
+              name="serial"
+              aria-describedby="scanRange scanHelp scanStatus"
+              class="scan-input"
+              autocomplete="off"
+              autofocus
+              placeholder="Bipe ou digite o serial"
+            /><small id="scanHelp"
+              >OK = aprovado na inspeção; NG = defeito encontrado. Enter registra como OK, inclusive quando enviado pelo leitor. Para NG, use Registrar NG. Confira a faixa e o resultado antes de registrar.</small
+            >
+          </div>
+          <div class="result-buttons scan-box">
+            <button id="ngScan" class="ng-button" type="button">
+              Registrar NG</button
+            ><button id="okScan" class="ok-button" type="button">
+              Registrar OK
+            </button>
+          </div>
+          <div
+            id="scanStatus"
+            class="status-message"
+            role="status"
+            aria-live="polite"
+          ></div>
+        </form>
+        <aside class="panel span-4">
+          <h2>Andamento</h2>
+          <div class="summary-list summary-list-two">
+            <div>
+              <span>Inspecionados</span><strong id="scanCount">0</strong>
+            </div>
+            <div><span>Pendentes</span><strong id="scanPending">0</strong></div>
+          </div>
+        </aside>
+        <article class="panel span-12">
+          <h2>Leituras deste bloqueio</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Serial</th>
+                  <th scope="col">Resultado</th>
+                  <th scope="col">Data e hora</th>
+                  <th scope="col">Responsável</th>
+                  <th scope="col">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="scanRows"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

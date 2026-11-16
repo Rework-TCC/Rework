@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rework | Usuários e perfis</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="users"></aside>
+    <main
+  id="main"
+  class="app-main"
+  tabindex="-1"
+>
+
+  <header class="page-top">
+
+    <div>
+
+      <p class="kicker">
+        Administração
+      </p>
+
+      <h1>
+        Usuários e perfis
+      </h1>
+
+      <p>
+        Gerencie usuários autorizados,
+        seus perfis e situação de acesso.
+      </p>
+
+    </div>
+
+  </header>
+
+  <section
+    class="content-grid profile-grid"
+  >
+
+    <article
+      class="panel span-4 profile-card"
+    >
+      <span
+        class="profile-dot admin"
+      ></span>
+
+      <h2>Administrador</h2>
+
+      <p>
+        Gerencia usuários,
+        solicitações e permissões
+        e possui acesso administrativo
+        às funcionalidades do sistema.
+      </p>
+
+      <span class="badge defined">
+        Administração
+      </span>
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot quality"
+      ></span>
+
+      <h2>Qualidade</h2>
+
+      <p>
+        Cria e acompanha ocorrências,
+        realiza bipagens e consulta
+        os relatórios.
+      </p>
+
+      <span class="badge defined">
+        Operacional
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot engineering"
+      ></span>
+
+      <h2>Engenharia</h2>
+
+      <p>
+        Define e atualiza o método
+        de retrabalho.
+      </p>
+
+      <span class="badge started">
+        Editor técnico
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot shipping"
+      ></span>
+
+      <h2>Expedição</h2>
+
+      <p>
+        Informa os custos relacionados
+        aos containers e atraso de venda.
+      </p>
+
+      <span class="badge started">
+        Editor de custos
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-4 profile-card"
+    >
+
+      <span
+        class="profile-dot production"
+      ></span>
+
+      <h2>Produção</h2>
+
+      <p>
+        Consulta somente o Dashboard.
+        Não possui conta autenticada.
+      </p>
+
+      <span class="badge pending">
+        Acesso público
+      </span>
+
+    </article>
+
+    <article
+      class="panel span-12"
+    >
+
+      <div class="section-heading">
+
+        <h2>
+          Usuários cadastrados
+        </h2>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Usuário</th>
+              <th>Área</th>
+              <th>Perfil</th>
+              <th>Situação</th>
+              <th>Ações</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="userRows">
+
+            <tr>
+              <td
+                colspan="5"
+                class="empty"
+              >
+                Carregando...
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+  </section>
+
+</main>
+    <script src="app.js"></script>
+  </body>
+</html>

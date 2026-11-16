@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rework | Dashboard</title>
+    <link rel="icon" href="assets/rework-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-body">
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+    <aside id="sidebar" data-active="dashboard"></aside>
+    <main id="main" class="app-main" tabindex="-1">
+      <header class="page-top">
+        <div>
+          <p class="kicker">Visão geral</p>
+          <h1>Painel da qualidade</h1>
+          <p>Visão consolidada dos bloqueios e do avanço de cada linha.</p>
+        </div>
+        <a class="primary quality-only" href="nova-ocorrencia.html"
+          >Criar ocorrência</a
+        >
+      </header>
+      <!-- Indicadores gerais calculados pelo JavaScript. -->
+      <section
+        id="dashboardMetrics"
+        class="dashboard-grid"
+        aria-label="Indicadores gerais"
+      ></section>
+      <section class="panel dashboard-charts" aria-label="Gráficos de acompanhamento operacional">
+        <div class="section-heading">
+          <p class="kicker">Acompanhamento operacional</p>
+          <span id="dashboardChartsUpdated" class="page-stamp"></span>
+        </div>
+        <div class="dashboard-charts-grid">
+          <article class="dashboard-chart" aria-labelledby="statusChartTitle">
+            <h2 id="statusChartTitle">Ocorrências por status</h2>
+            <div id="dashboardStatusChart"></div>
+          </article>
+          <article class="dashboard-chart" aria-labelledby="costChartTitle">
+            <h2 id="costChartTitle">Ocorrências por linha</h2>
+            <div id="dashboardCostChart"></div>
+          </article>
+        </div>
+      </section>
+      <!-- Acompanhamento detalhado de cada bloqueio. -->
+      <section class="panel dashboard-detail">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Acompanhamento operacional</p>
+            <h2>Bloqueios por linha</h2>
+          </div>
+          <span id="dashboardUpdated" class="page-stamp"></span>
+        </div>
+        <div class="table-wrap dashboard-table-wrap">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th scope="col">Linha</th>
+                <th scope="col">Modelo</th>
+                <th scope="col">Data</th>
+                <th scope="col">Problema</th>
+                <th scope="col">Qtd. bloqueada</th>
+                <th scope="col">Qtd. pendente</th>
+                <th scope="col">Qtd. defeito</th>
+                <th scope="col">Status</th>
+                <th scope="col">Custo / prioridade</th>
+                <th scope="col">Progresso geral</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardRows"></tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <a class="secondary occurrence-access" href="ocorrencias.html"
+            >Ver todas as ocorrências</a
+          >
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
