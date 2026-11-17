@@ -11,47 +11,9 @@
 [![GitHub Forks](https://img.shields.io/github/forks/Rework-TCC/Rework?style=for-the-badge)](https://github.com/Rework-TCC/Rework/network/members)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
 
-[🌐 Demo ao Vivo](https://rework-virid.vercel.app) · [🐞 Reportar Bug](https://github.com/Rework-TCC/Rework/issues) · [✨ Solicitar Feature](https://github.com/Rework-TCC/Rework/issues)
-
-</div>
-
----
-
-## 📋 Sobre o Projeto
-
-O **REWORK** é um sistema web desenvolvido para apoiar o monitoramento, a rastreabilidade e o acompanhamento de retrabalhos no setor eletroeletrônico.
-
-A aplicação centraliza informações que podem estar distribuídas entre diferentes controles e setores, permitindo acompanhar uma ocorrência desde o registro inicial até a definição do método de retrabalho, classificação de seriais, atualização de custos e consulta de indicadores.
-
-O projeto foi desenvolvido como Trabalho de Conclusão de Curso de **Sistemas de Informação**.
-
-### ✨ Principais Funcionalidades
-
-- 🎯 **Gestão de ocorrências** — cadastro, consulta, edição e acompanhamento de retrabalhos.
-- 🔎 **Rastreabilidade de seriais** — classificação e controle de itens como OK ou NG.
-- 👥 **Controle de acesso por perfil** — permissões específicas para Administrador, Qualidade, Engenharia, Expedição e Produção.
-- 🔒 **Autenticação** — login com sessão e senhas armazenadas por hash com bcrypt.
-- 🧰 **Método de retrabalho** — registro do método definido pela Engenharia e suporte a arquivo relacionado.
-- 💰 **Controle de custos** — registro de valores associados às ocorrências pela Expedição.
-- 📊 **Dashboard e relatórios** — acompanhamento de ocorrências, filtros e indicadores.
-- 📝 **Solicitação de acesso** — fluxo de solicitação, aprovação e rejeição pelo Administrador.
-
----
-
-# 🚀 REWORK
-
-<div align="center">
-
-<img src="frontend/assets/rework-symbol.svg" alt="Símbolo REWORK" width="110">
-
-### Sistema web para centralizar, rastrear e acompanhar ocorrências de retrabalho no setor eletroeletrônico.
-
-[![Status](https://img.shields.io/badge/status-online-brightgreen?style=for-the-badge)](https://rework-virid.vercel.app)
-[![GitHub Stars](https://img.shields.io/github/stars/Rework-TCC/Rework?style=for-the-badge)](https://github.com/Rework-TCC/Rework/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/Rework-TCC/Rework?style=for-the-badge)](https://github.com/Rework-TCC/Rework/network/members)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
-
-[🌐 Demo ao Vivo](https://rework-virid.vercel.app) · [🐞 Reportar Bug](https://github.com/Rework-TCC/Rework/issues) · [✨ Solicitar Feature](https://github.com/Rework-TCC/Rework/issues)
+[🌐 Demo ao Vivo](https://rework-virid.vercel.app) ·
+[🐞 Reportar Bug](https://github.com/Rework-TCC/Rework/issues) ·
+[✨ Solicitar Feature](https://github.com/Rework-TCC/Rework/issues)
 
 </div>
 
@@ -80,7 +42,7 @@ O projeto foi desenvolvido como Trabalho de Conclusão de Curso de **Sistemas de
 
 ## 🎬 Demonstração
 
-### Screenshot
+### 🔐 Acesso ao sistema
 
 <div align="center">
 
@@ -88,11 +50,13 @@ O projeto foi desenvolvido como Trabalho de Conclusão de Curso de **Sistemas de
 
 </div>
 
-### Acesso online
+A tela inicial permite a autenticação dos usuários e disponibiliza o acesso às funcionalidades de acordo com o perfil cadastrado.
+
+### 🌐 Acesso online
 
 A versão publicada do sistema está disponível em:
 
-**[https://rework-virid.vercel.app](https://rework-virid.vercel.app)**
+### **[Acessar o REWORK](https://rework-virid.vercel.app)**
 
 ---
 
@@ -123,7 +87,7 @@ A versão publicada do sistema está disponível em:
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
 - MySQL Workbench
-- TiDB Cloud em modo compatível com MySQL para o banco online
+- TiDB Cloud em modo compatível com MySQL
 - UML para modelagem
 - Trello para organização das atividades
 
@@ -148,9 +112,45 @@ MySQL compatível
 
 O **frontend** apresenta as telas e realiza as interações com o usuário.
 
-O **backend** recebe as requisições, aplica regras de negócio, verifica autenticação e permissões e se comunica com o banco.
+O **backend** recebe as requisições, aplica regras de negócio, verifica autenticação e permissões e se comunica com o banco de dados.
 
 O **banco de dados** mantém a persistência das informações do sistema.
+
+---
+
+## 👥 Perfis de Acesso
+
+O REWORK utiliza diferentes perfis para separar as responsabilidades dentro do processo de retrabalho.
+
+| Perfil | Responsabilidade principal |
+| --- | --- |
+| **Administrador** | Gerenciar usuários e analisar solicitações de acesso |
+| **Qualidade** | Criar, editar e acompanhar ocorrências e classificar seriais |
+| **Engenharia** | Registrar o método de retrabalho |
+| **Expedição** | Registrar os custos relacionados às ocorrências |
+| **Produção** | Consultar o dashboard e acompanhar as ocorrências |
+
+As permissões também são verificadas no backend, não apenas pela interface.
+
+---
+
+## 🔄 Fluxo do Sistema
+
+O fluxo principal do REWORK acompanha as responsabilidades de cada setor:
+
+```text
+Qualidade registra a ocorrência
+           ↓
+Engenharia define o método
+           ↓
+Qualidade classifica os seriais
+           ↓
+Expedição atualiza os custos
+           ↓
+Dashboard e relatórios consolidam os dados
+```
+
+Dessa forma, os diferentes setores trabalham sobre a mesma ocorrência, mantendo as informações centralizadas e rastreáveis.
 
 ---
 
@@ -197,10 +197,11 @@ DB_PASSWORD=sua_senha
 DB_NAME=rework
 
 SESSION_SECRET=sua_chave_de_sessao
+
 PORT=3000
 ```
 
-> O arquivo `.env` contém informações sensíveis e não deve ser enviado ao GitHub.
+> ⚠️ O arquivo `.env` contém informações sensíveis e não deve ser enviado ao GitHub.
 
 5. **Execute o projeto**
 
@@ -224,31 +225,58 @@ http://localhost:3000
 
 ## 📖 Como Usar
 
-O fluxo principal do REWORK acompanha as responsabilidades de cada setor:
+### 1. Autenticação
 
-| Perfil | Responsabilidade principal |
-| --- | --- |
-| **Administrador** | Gerenciar usuários e analisar solicitações de acesso |
-| **Qualidade** | Criar e acompanhar ocorrências e classificar seriais |
-| **Engenharia** | Registrar o método de retrabalho |
-| **Expedição** | Registrar os custos relacionados à ocorrência |
-| **Produção** | Consultar o dashboard público |
+O usuário realiza o login com e-mail e senha.
 
-### Exemplo de fluxo
+O backend consulta o usuário no banco e utiliza o `bcryptjs` para comparar a senha informada com o hash armazenado.
 
 ```text
-Qualidade registra a ocorrência
-           ↓
-Engenharia define o método
-           ↓
-Qualidade classifica os seriais
-           ↓
-Expedição atualiza os custos
-           ↓
-Dashboard e relatórios consolidam os dados
+Login
+  ↓
+Busca do usuário no banco
+  ↓
+Validação da senha
+  ↓
+Verificação do perfil
+  ↓
+Criação da sessão
+  ↓
+Acesso ao sistema
 ```
 
-As permissões são verificadas no backend, e não apenas ocultadas na interface.
+### 2. Cadastro de ocorrência
+
+O perfil **Qualidade** pode registrar uma ocorrência informando dados como:
+
+- linha de produção;
+- modelo;
+- defeito;
+- descrição do problema;
+- faixa de seriais;
+- quantidade bloqueada;
+- containers envolvidos.
+
+### 3. Método de retrabalho
+
+O perfil **Engenharia** acessa a ocorrência e registra o método que deverá ser utilizado no retrabalho.
+
+### 4. Classificação dos seriais
+
+O perfil **Qualidade** pode registrar e classificar os seriais como:
+
+```text
+OK
+NG
+```
+
+### 5. Custos
+
+O perfil **Expedição** registra os custos associados à ocorrência.
+
+### 6. Acompanhamento
+
+As informações são disponibilizadas no dashboard, nas consultas e nos relatórios do sistema.
 
 ---
 
@@ -256,56 +284,209 @@ As permissões são verificadas no backend, e não apenas ocultadas na interface
 
 ```text
 📦 Rework
+│
 ├── 📁 backend/
-│   ├── 📁 public/              # Arquivos publicados no deploy
+│   │
+│   ├── 📁 public/
+│   │   └── Arquivos utilizados no deploy
+│   │
 │   ├── 📁 src/
-│   │   ├── 📁 config/          # Configurações da aplicação e banco
-│   │   ├── 📁 controllers/     # Regras e operações do sistema
-│   │   ├── 📁 middlewares/     # Autenticação, autorização e uploads
-│   │   ├── 📁 models/          # Camada de modelos
-│   │   ├── 📁 routes/          # Rotas da API
-│   │   ├── 📄 app.js           # Configuração do Express
-│   │   └── 📄 server.js        # Inicialização do servidor
-│   ├── 📁 uploads/             # Arquivos enviados localmente
+│   │   ├── 📁 config/
+│   │   │   └── Configurações da aplicação e banco
+│   │   │
+│   │   ├── 📁 controllers/
+│   │   │   └── Regras e operações do sistema
+│   │   │
+│   │   ├── 📁 middlewares/
+│   │   │   └── Autenticação, autorização e uploads
+│   │   │
+│   │   ├── 📁 models/
+│   │   │   └── Camada de modelos
+│   │   │
+│   │   ├── 📁 routes/
+│   │   │   └── Rotas da API
+│   │   │
+│   │   ├── 📄 app.js
+│   │   └── 📄 server.js
+│   │
+│   ├── 📁 uploads/
 │   └── 📄 package.json
-├── 📁 frontend/                # HTML, CSS, JavaScript e assets
+│
+├── 📁 frontend/
+│   ├── 📁 assets/
+│   ├── 📄 app.js
+│   ├── 📄 styles.css
+│   ├── 📄 index.html
+│   ├── 📄 dashboard.html
+│   ├── 📄 ocorrencias.html
+│   ├── 📄 nova-ocorrencia.html
+│   ├── 📄 detalhes-ocorrencia.html
+│   ├── 📄 seriais.html
+│   ├── 📄 metodo-retrabalho.html
+│   ├── 📄 relatorios.html
+│   └── ...
+│
 ├── 📁 database/
-│   └── 📄 schema.sql           # Estrutura do banco de dados
-├── 📁 docs/                    # Documentação e evidências
-├── 📁 tests/                   # Scripts de testes do frontend
+│   └── 📄 schema.sql
+│
+├── 📁 docs/
+│   ├── 📁 evidencias/
+│   └── 📄 GUIA-DO-PROJETO.md
+│
+├── 📁 tests/
+│   ├── 📄 frontend-accessibility.cjs
+│   ├── 📄 frontend-identity.cjs
+│   └── 📄 frontend-usability.cjs
+│
 └── 📄 README.md
 ```
 
 ---
 
+## 🗄️ Banco de Dados
+
+O REWORK utiliza banco de dados relacional compatível com MySQL.
+
+Entre as principais tabelas estão:
+
+```text
+perfil
+usuario
+solicitacao_acesso
+linha_producao
+modelo_produto
+ocorrencia_retrabalho
+metodo_retrabalho
+container
+inspecao_serial
+historico_ocorrencia
+apontamento_retrabalho
+```
+
+Os relacionamentos entre as tabelas são mantidos por meio de chaves estrangeiras, contribuindo para a integridade das informações.
+
+---
+
 ## 🔌 Principais Endpoints da API
+
+### Autenticação
 
 ```text
 POST   /api/auth/login
 GET    /api/auth/me
 POST   /api/auth/change-password
 POST   /api/auth/logout
+```
 
+### Solicitações de acesso
+
+```text
 POST   /api/access-requests
+GET    /api/access-requests
+GET    /api/access-requests/pending
+POST   /api/access-requests/:id/approve
+POST   /api/access-requests/:id/reject
+```
 
+### Usuários
+
+```text
+GET    /api/users
+PATCH  /api/users/:id/profile
+PATCH  /api/users/:id/status
+```
+
+### Ocorrências
+
+```text
 GET    /api/occurrences
 POST   /api/occurrences
 GET    /api/occurrences/:protocolo
 PUT    /api/occurrences/:protocolo
 DELETE /api/occurrences/:protocolo
-
-PATCH  /api/occurrences/:protocolo/costs
-POST   /api/occurrences/:protocolo/method
-POST   /api/occurrences/:protocolo/scans
-
-GET    /api/users
 ```
+
+### Custos
+
+```text
+PATCH /api/occurrences/:protocolo/costs
+```
+
+### Métodos de retrabalho
+
+```text
+POST   /api/occurrences/:protocolo/method
+DELETE /api/occurrences/:protocolo/method/file
+```
+
+### Seriais
+
+```text
+POST   /api/occurrences/:protocolo/scans
+DELETE /api/occurrences/:protocolo/scans/:serial
+```
+
+---
+
+## 🔐 Segurança
+
+O sistema possui mecanismos de autenticação e autorização no backend.
+
+### Senhas
+
+As senhas não são armazenadas em texto puro.
+
+O sistema utiliza:
+
+```text
+bcryptjs
+```
+
+para geração e comparação dos hashes.
+
+### Sessões
+
+A autenticação utiliza:
+
+```text
+express-session
+```
+
+Após o login, a sessão armazena informações necessárias para identificar o usuário autenticado.
+
+### Controle de acesso
+
+As rotas protegidas verificam:
+
+```text
+Usuário autenticado?
+        ↓
+Senha regularizada?
+        ↓
+Perfil possui permissão?
+        ↓
+Operação autorizada
+```
+
+Assim, a segurança não depende apenas de ocultar elementos da interface.
+
+### Variáveis de ambiente
+
+Credenciais do banco e chaves de sessão devem permanecer em variáveis de ambiente.
+
+O arquivo:
+
+```text
+.env
+```
+
+está configurado para não ser versionado pelo Git.
 
 ---
 
 ## 🧪 Testes
 
-O repositório possui scripts de teste para aspectos do frontend:
+O repositório possui scripts relacionados a testes do frontend:
 
 ```text
 tests/frontend-accessibility.cjs
@@ -313,27 +494,44 @@ tests/frontend-identity.cjs
 tests/frontend-usability.cjs
 ```
 
-Esses testes utilizam Playwright e, no caso das verificações de acessibilidade, axe-core.
+Os testes incluem verificações relacionadas a:
 
-Atualmente eles não estão configurados como um script `npm test` no `backend/package.json`.
+- acessibilidade;
+- identidade visual;
+- comportamento da interface;
+- responsividade;
+- usabilidade.
+
+Os testes de acessibilidade utilizam **axe-core**, juntamente com automação baseada em Playwright.
 
 Exemplos de execução:
 
 ```bash
 node tests/frontend-accessibility.cjs
+```
+
+```bash
 node tests/frontend-identity.cjs
+```
+
+```bash
 node tests/frontend-usability.cjs
 ```
 
+> Atualmente esses testes não estão configurados como um script `npm test` no `backend/package.json`.
+
 ---
 
-## 🔐 Segurança
+## ☁️ Deploy
 
-- As senhas são armazenadas em formato de hash com **bcryptjs**.
-- A aplicação utiliza **express-session** para autenticação por sessão.
-- As rotas protegidas verificam autenticação e perfil no backend.
-- Credenciais e chaves devem permanecer apenas em variáveis de ambiente.
-- O arquivo `.env` está ignorado pelo Git.
+A aplicação está publicada utilizando:
+
+- **Vercel** para disponibilização do sistema;
+- **TiDB Cloud**, em modo compatível com MySQL, para persistência online dos dados.
+
+A versão em produção está disponível em:
+
+### **[https://rework-virid.vercel.app](https://rework-virid.vercel.app)**
 
 ---
 
@@ -342,25 +540,28 @@ node tests/frontend-usability.cjs
 Contribuições são bem-vindas.
 
 1. Faça um Fork do projeto.
+
 2. Crie uma branch:
 
 ```bash
 git checkout -b feature/minha-feature
 ```
 
-3. Faça o commit:
+3. Faça suas alterações.
+
+4. Faça o commit:
 
 ```bash
 git commit -m "adiciona minha feature"
 ```
 
-4. Envie a branch:
+5. Envie a branch:
 
 ```bash
 git push origin feature/minha-feature
 ```
 
-5. Abra um Pull Request.
+6. Abra um Pull Request.
 
 ---
 
@@ -394,6 +595,3 @@ A todos que contribuíram com o desenvolvimento, avaliação e evolução do pro
 **REWORK — mais organização, rastreabilidade e apoio à decisão no retrabalho.**
 
 </div>
-
----
-
